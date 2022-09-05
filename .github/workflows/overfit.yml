@@ -1,0 +1,37 @@
+name: overfit
+
+on:
+  # once GPU runners are available, this workflow can be run
+  # schedule:
+    # daily, not on hour start, see https://crontab.guru/
+    # - cron: '17 1 * * *'
+  # allows manual triggering of this workflow
+  workflow_dispatch:
+
+jobs:
+
+  overfit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.7"
+      - name: Full Python environment cacheing
+      # see AI2 blogpost for details: https://blog.allenai.org/python-caching-in-github-actions-e9452698e98d
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.pythonLocation }}
+          key: v1-${{ env.pythonLocation }}-${{ hashFiles('requirements/dev.txt') }}-${{ hashFiles('requirements/prod.txt') }}
+      - name: Install dependencies with pip
+        run: |
+          pip install --quiet -r requirements/prod.txt -r requirements/dev.txt
+      - name: Run overfitting test
+        run: |
+          ./training/tests/overfit.sh
+        env:
+          PYTHONPATH: .
+          WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
+          WANDB_PROJECT: fsdl-testing-2022-ci

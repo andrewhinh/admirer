@@ -3,7 +3,6 @@ import signal
 
 from app_gradio import app
 
-
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
 

@@ -3,10 +3,10 @@ import argparse
 import json
 import logging
 import os
-from pathlib import Path
-from typing import Callable
 
 # Hide lines below until Lab 08
+from pathlib import Path
+from typing import Callable
 import warnings
 
 # Hide lines above until Lab 08
@@ -21,6 +21,7 @@ from app_gradio.s3_util import make_unique_bucket_name
 
 # Hide lines above until Lab 08
 from text_recognizer.paragraph_text_recognizer import ParagraphTextRecognizer
+
 import text_recognizer.util as util
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""  # do not use GPU

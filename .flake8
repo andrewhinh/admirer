@@ -40,3 +40,4 @@ per-file-ignores =
   *text_recognizer/util.py:DAR101,F401
   *training/run_experiment.py:I202
   *app_gradio/app.py:I202
+  *training/stage_pretrain/data.py:S403, E713, S301

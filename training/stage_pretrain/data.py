@@ -104,8 +104,6 @@ class OkvqaDataset(torch.utils.data.Dataset):
             try:
                 passages = [f.format(c[0], "{} is a {}".format(c[0], c[1])) for c in entities]
             except Exception:
-                print(example)
-                print(entities)
                 raise AssertionError
         else:
             passages = None
@@ -190,16 +188,11 @@ def load_json(file_path):
     return data
 
 
-def load_okvqa_data(data_root=None, split_type="train2014", global_rank=-1, world_size=-1, use_gpt=True):
+def load_okvqa_data(data_root=None, split_type="train2014", use_gpt=True):
     assert data_root
 
     with open(os.path.join(data_root, "{}.pkl".format(split_type)), "rb") as input:
         (img_questions, img_answers) = pickle.load(input)
-
-    questions = list(img_questions.values())
-    answers = list(img_answers.values())
-    img_questions = dict(zip(["img.jpg"] * len(questions), questions))
-    img_answers = dict(zip(["img.jpg"] * len(answers), answers))
 
     entity_path = os.path.join(data_root, "wikidata_okvqa_{}_topentities.pkl".format(split_type))
     with open(entity_path, "rb") as input:
@@ -210,10 +203,19 @@ def load_okvqa_data(data_root=None, split_type="train2014", global_rank=-1, worl
         with open(gpt_path, "rb") as input:
             gpt_answers = pickle.load(input)
 
+    # Because downloading all images not feasible, using example image
+    questions = list(img_questions.values())
+    i_answers = list(img_answers.values())
+    entries = list(wiki_entites.values())
+    g_answers = list(gpt_answers.values())
+
+    img_questions = dict(zip(["img.jpg"] * len(questions), questions))
+    img_answers = dict(zip(["img.jpg"] * len(i_answers), i_answers))
+    wiki_entites = dict(zip(["img.jpg"] * len(entries), entries))
+    gpt_answers = dict(zip(["img.jpg"] * len(g_answers), g_answers))
+
     examples = []
-    for k, id in enumerate(img_questions):
-        if global_rank > -1 and not k % world_size == global_rank:
-            continue
+    for id in img_questions:
         example = {}
         img_id = id.split("#")[0]
         question = img_questions[id]

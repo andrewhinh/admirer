@@ -37,8 +37,9 @@ model_name = "t5-large"
 tokenizer = transformers.T5Tokenizer.from_pretrained(model_name)
 collator = data.OKvqaCollator(text_maxlength, tokenizer)
 
-# Note: Edited function to support 'img.jpg' instead of downloading whole COCO dataset
-eval_examples = data.load_okvqa_data(HOME_DIR / "val2014", split_type="val2014", use_gpt=True)
+eval_examples = data.load_okvqa_data(
+    HOME_DIR / "val2014", split_type="val2014", use_gpt=True
+)  # Note: Edited function to support 'img.jpg' instead of downloading whole COCO dataset
 
 dataset = data.OkvqaDataset(eval_examples, n_context)
 sampler = SequentialSampler(dataset)

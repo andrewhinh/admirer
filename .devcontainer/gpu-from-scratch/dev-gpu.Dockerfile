@@ -27,7 +27,7 @@ RUN make conda-update
 #   removing environment-setting in /root/.bashrc
 RUN sed -i "s/mesg n || true/tty -s \&\& mesg n/" $HOME/.profile
 RUN sed -i "s/conda activate base//" $HOME/.bashrc
-SHELL ["conda", "run", "--no-capture-output", "-n", "fsdl-text-recognizer-2022", "/bin/bash", "-c"]
+SHELL ["conda", "run", "--no-capture-output", "-n", "admirer", "/bin/bash", "-c"]
 
 # install the core requirements, then remove build files
 COPY ./requirements ./requirements
@@ -37,4 +37,4 @@ RUN make pip-tools && rm -rf ./Makefile ./requirements ./environment.yml
 ENV PYTHONPATH=.:$PYTHONPATH
 
 # run all commands inside the conda environment
-ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "fsdl-text-recognizer-2022", "/bin/bash"]
+ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "admirer", "/bin/bash"]

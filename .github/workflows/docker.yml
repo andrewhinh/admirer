@@ -26,5 +26,5 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags: fullstackdeeplearning/development:latest
+          tags: admirer/development:latest
           file: .devcontainer/gpu-from-scratch/dev-gpu.Dockerfile

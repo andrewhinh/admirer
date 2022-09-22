@@ -34,4 +34,4 @@ jobs:
         env:
           PYTHONPATH: .
           WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
-          WANDB_PROJECT: fsdl-testing-2022-ci
+          WANDB_PROJECT: admirer-ci

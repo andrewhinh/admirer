@@ -6,7 +6,6 @@ requests
 smart_open[s3]
 tqdm
 # versioned for stability
-gantry==0.4.9
 gradio==3.0.21
 # versioned to match Google Colab up to minor
 Jinja2>=2.11,<2.12
@@ -15,4 +14,5 @@ torch>=1.12,<1.13
 torchvision>=0.13
 # versioned to avoid breaking change in minor version update
 markupsafe<2.1
-#transformers==3.0.2 # for KAT
+# for PICa
+openai==0.23.1

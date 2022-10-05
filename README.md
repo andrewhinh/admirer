@@ -10,4 +10,5 @@ A full-stack ML-powered website that utilizes users’ webcam feeds to answer op
 ## Credit
 - https://huggingface.co/facebook/detr-resnet-50-panoptic for their image segmentation model.
 - https://huggingface.co/nlpconnect/vit-gpt2-image-captioning for their image caption model
+- https://huggingface.co/openai/clip-vit-base-patch16 for their text and image encoders.
 - https://github.com/microsoft/PICa for their visual question answering code.

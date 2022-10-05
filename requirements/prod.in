@@ -1,5 +1,6 @@
 h5py
 importlib-metadata>=4.4
+mkl-service==2.4.0
 numpy
 pyngrok
 requests
@@ -11,7 +12,7 @@ gradio==3.0.21
 Jinja2>=2.11,<2.12
 pillow<7.2
 torch>=1.12,<1.13
-torchvision>=0.13
+torchvision>=0.13.0
 # versioned to avoid breaking change in minor version update
 markupsafe<2.1
 # for models

@@ -85,7 +85,9 @@ httpcore==0.15.0
 httpx==0.23.0
     # via gradio
 huggingface-hub==0.10.0
-    # via transformers
+    # via
+    #   timm
+    #   transformers
 idna==3.3
     # via
     #   anyio
@@ -98,6 +100,8 @@ importlib-metadata==4.11.3
     #   click
     #   huggingface-hub
     #   transformers
+intel-openmp==2022.2.0
+    # via mkl
 jinja2==2.11.3
     # via
     #   -r requirements/prod.in
@@ -124,6 +128,10 @@ mdit-py-plugins==0.3.0
     # via markdown-it-py
 mdurl==0.1.1
     # via markdown-it-py
+mkl==2022.2.0
+    # via mkl-service
+mkl-service==2.4.0
+    # via -r requirements/prod.in
 monotonic==1.6
     # via analytics-python
 multidict==6.0.2
@@ -197,6 +205,7 @@ pyyaml==6.0
     # via
     #   huggingface-hub
     #   pyngrok
+    #   timm
     #   transformers
 regex==2022.9.13
     # via transformers
@@ -216,6 +225,7 @@ s3transfer==0.6.0
 six==1.16.0
     # via
     #   analytics-python
+    #   mkl-service
     #   paramiko
     #   python-dateutil
     #   python-multipart
@@ -228,14 +238,21 @@ sniffio==1.2.0
     #   httpx
 starlette==0.19.1
     # via fastapi
+tbb==2021.7.0
+    # via mkl
+timm==0.6.11
+    # via -r requirements/prod.in
 tokenizers==0.12.1
     # via transformers
 torch==1.12.0
     # via
     #   -r requirements/prod.in
+    #   timm
     #   torchvision
 torchvision==0.13.0
-    # via -r requirements/prod.in
+    # via
+    #   -r requirements/prod.in
+    #   timm
 tqdm==4.64.0
     # via
     #   -r requirements/prod.in

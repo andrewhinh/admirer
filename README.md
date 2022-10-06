@@ -1,5 +1,5 @@
 # admirer
-A full-stack ML-powered website that utilizes users’ webcam feeds to answer open-ended questions that require outside knowledge. 
+A full-stack ML-powered website that utilizes users’ webcam feeds to answer open-ended questions requiring outside knowledge. 
 
 ## Setup
 - Same steps as in https://github.com/full-stack-deep-learning/fsdl-text-recognizer-2022-labs/tree/main/setup.

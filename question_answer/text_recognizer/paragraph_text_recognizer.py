@@ -15,7 +15,7 @@ from typing import Sequence, Union
 from PIL import Image
 import torch
 
-from text_recognizer import util
+from question_answer import util
 from text_recognizer.stems.paragraph import ParagraphStem
 
 

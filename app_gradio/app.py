@@ -1,4 +1,4 @@
-"""Provide an image of handwritten text and get back out a string!"""
+"""Provide an image from your webcam and a question and get back out a string!"""
 import argparse
 import json
 import logging
@@ -6,32 +6,21 @@ import os
 from pathlib import Path
 from typing import Callable
 
-# Hide lines below until Lab 08
-import warnings
-
-# Hide lines above until Lab 08
 import gradio as gr
 from PIL import ImageStat
 from PIL.Image import Image
 import requests
 
-# Hide lines below until Lab 08
-from app_gradio.flagging import GantryImageToTextLogger, get_api_key
-from app_gradio.s3_util import make_unique_bucket_name
+from question_answer import util
+from question_answer.answer import Pipeline
 
-# Hide lines above until Lab 08
-from text_recognizer.paragraph_text_recognizer import ParagraphTextRecognizer
-import text_recognizer.util as util
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""  # do not use GPU
 
 logging.basicConfig(level=logging.INFO)
-# Hide lines below until Lab 08
-DEFAULT_APPLICATION_NAME = "fsdl-text-recognizer"
-# Hide lines above until Lab 08
 
 APP_DIR = Path(__file__).resolve().parent  # what is the directory for this application?
-FAVICON = APP_DIR / "1f95e.png"  # path to a small image for display in browser tab and social media
+FAVICON = APP_DIR / "logo.png"  # path to a small image for display in browser tab and social media
 README = APP_DIR / "README.md"  # path to an app readme file in HTML/markdown
 
 DEFAULT_PORT = 11700
@@ -39,14 +28,7 @@ DEFAULT_PORT = 11700
 
 def main(args):
     predictor = PredictorBackend(url=args.model_url)
-    frontend = make_frontend(
-        predictor.run,
-        # Hide lines below until Lab 08
-        flagging=args.flagging,
-        gantry=args.gantry,
-        app_name=args.application
-        # Hide lines above until Lab 08
-    )
+    frontend = make_frontend(predictor.run, flagging=args.flagging)
     frontend.launch(
         server_name="0.0.0.0",  # make server accessible, binding all interfaces  # noqa: S104
         server_port=args.port,  # set a port to bind to, failing if unavailable
@@ -55,40 +37,29 @@ def main(args):
     )
 
 
-def make_frontend(
-    fn: Callable[[Image], str],
-    # Hide lines below until Lab 08
-    flagging: bool = False,
-    gantry: bool = False,
-    app_name: str = "fsdl-text-recognizer"
-    # Hide lines above until Lab 08
-):
-    """Creates a gradio.Interface frontend for an image to text function."""
-    examples_dir = Path("text_recognizer") / "tests" / "support" / "paragraphs"
-    example_fnames = [elem for elem in os.listdir(examples_dir) if elem.endswith(".png")]
-    example_paths = [examples_dir / fname for fname in example_fnames]
+def make_frontend(fn: Callable[[Image, str], str], flagging: bool = False):
+    """Creates a gradio.Interface frontend for an image + text to text function."""
+    img_examples_dir = Path("question_answer") / "tests" / "support" / "images"
+    img_example_fnames = [elem for elem in os.listdir(img_examples_dir) if elem.endswith(".jpg")]
+    img_example_paths = [img_examples_dir / fname for fname in img_example_fnames]
 
-    examples = [[str(path)] for path in example_paths]
+    question_examples_dir = Path("question_answer") / "tests" / "support" / "questions"
+    question_example_fnames = [elem for elem in os.listdir(question_examples_dir) if elem.endswith(".txt")]
+    question_example_paths = [question_examples_dir / fname for fname in question_example_fnames]
+    questions = []
+    for path in question_example_paths:
+        with open(path, "r") as f:
+            questions.append(f.readline())
+
+    examples = [[str(img_path), question] for img_path, question in zip(img_example_paths, questions)]
 
     allow_flagging = "never"
-    # Hide lines below until Lab 08
-    if flagging:
+    if flagging:  # logging user feedback to a local CSV file
         allow_flagging = "manual"
-        api_key = get_api_key()
-        if gantry and api_key:  # if we're logging user feedback to Gantry and we have an API key
-            allow_flagging = "manual"  # turn on Gradio flagging features
-            # callback for logging input images, output text, and feedback to Gantry
-            flagging_callback = GantryImageToTextLogger(application=app_name, api_key=api_key)
-            # that sends images to S3
-            flagging_dir = make_unique_bucket_name(prefix=app_name, seed=api_key)
-        else:  # otherwise, log to a local CSV file
-            if gantry and api_key is None:
-                warnings.warn("No Gantry API key found, logging to local directory instead.")
-            flagging_callback = gr.CSVLogger()
-            flagging_dir = "flagged"
+        flagging_callback = gr.CSVLogger()
+        flagging_dir = "flagged"
     else:
         flagging_callback, flagging_dir = None, None
-    # Hide lines above until Lab 08
 
     readme = _load_readme(with_logging=allow_flagging == "manual")
 
@@ -97,19 +68,20 @@ def make_frontend(
         fn=fn,  # which Python function are we interacting with?
         outputs=gr.components.Textbox(),  # what output widgets does it need? the default text widget
         # what input widgets does it need? we configure an image widget
-        inputs=gr.components.Image(type="pil", label="Handwritten Text"),
-        title="📝 Text Recognizer",  # what should we display at the top of the page?
+        inputs=[
+            gr.components.Image(type="pil", label="Webcam Image", source="webcam"),
+            gr.components.Textbox(label="Question"),
+        ],
+        title="Admirer",  # what should we display at the top of the page?
         thumbnail=FAVICON,  # what should we display when the link is shared, e.g. on social media?
         description=__doc__,  # what should we display just above the interface?
         article=readme,  # what long-form content should we display below the interface?
         examples=examples,  # which potential inputs should we provide?
         cache_examples=False,  # should we cache those inputs for faster inference? slows down start
         allow_flagging=allow_flagging,  # should we show users the option to "flag" outputs?
-        # Hide lines below until Lab 08
         flagging_options=["incorrect", "offensive", "other"],  # what options do users have for feedback?
         flagging_callback=flagging_callback,
-        flagging_dir=flagging_dir
-        # Hide lines above until Lab 08
+        flagging_dir=flagging_dir,
     )
 
     return frontend
@@ -128,16 +100,16 @@ class PredictorBackend:
             self.url = url
             self._predict = self._predict_from_endpoint
         else:
-            model = ParagraphTextRecognizer()
+            model = Pipeline()
             self._predict = model.predict
 
-    def run(self, image):
-        pred, metrics = self._predict_with_metrics(image)
+    def run(self, image, question):
+        pred, metrics = self._predict_with_metrics(image, question)
         self._log_inference(pred, metrics)
         return pred
 
-    def _predict_with_metrics(self, image):
-        pred = self._predict(image)
+    def _predict_with_metrics(self, image, question):
+        pred = self._predict(image, question)
 
         stats = ImageStat.Stat(image)
         metrics = {
@@ -149,16 +121,19 @@ class PredictorBackend:
         }
         return pred, metrics
 
-    def _predict_from_endpoint(self, image):
-        """Send an image to an endpoint that accepts JSON and return the predicted text.
+    def _predict_from_endpoint(self, image, question):
+        """Send an image and question to an endpoint that accepts JSON and return the predicted text.
 
         The endpoint should expect a base64 representation of the image, encoded as a string,
-        under the key "image". It should return the predicted text under the key "pred".
+        under the key "image" and a str representation of the question. It should return the predicted text under the key "pred".
 
         Parameters
         ----------
         image
-            A PIL image of handwritten text to be converted into a string.
+            A PIL image of handwritten text to be converted into a string
+
+        question
+            A string containing the user's question
 
         Returns
         -------
@@ -168,7 +143,9 @@ class PredictorBackend:
         encoded_image = util.encode_b64_image(image)
 
         headers = {"Content-type": "application/json"}
-        payload = json.dumps({"image": "data:image/png;base64," + encoded_image})
+        payload = json.dumps(
+            {"image": "data:image/jpg;base64," + encoded_image, "question": "data:question/str;str," + question}
+        )
 
         response = requests.post(self.url, data=payload, headers=headers)
         pred = response.json()["pred"]
@@ -205,24 +182,11 @@ def _make_parser():
         type=int,
         help=f"Port on which to expose this server. Default is {DEFAULT_PORT}.",
     )
-    # Hide lines below until Lab 08
     parser.add_argument(
         "--flagging",
         action="store_true",
         help="Pass this flag to allow users to 'flag' model behavior and provide feedback.",
     )
-    parser.add_argument(
-        "--gantry",
-        action="store_true",
-        help="Pass --flagging and this flag to log user feedback to Gantry. Requires GANTRY_API_KEY to be defined as an environment variable.",
-    )
-    parser.add_argument(
-        "--application",
-        default=DEFAULT_APPLICATION_NAME,
-        type=str,
-        help=f"Name of the Gantry application to which feedback should be logged, if --gantry and --flagging are passed. Default is {DEFAULT_APPLICATION_NAME}.",
-    )
-    # Hide lines above until Lab 08
 
     return parser
 

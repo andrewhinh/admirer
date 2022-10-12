@@ -8,7 +8,7 @@ import pytorch_lightning as pl
 import torch
 from torch.utils.data import ConcatDataset, DataLoader
 
-from text_recognizer import util
+from question_answer import util
 from text_recognizer.data.util import BaseDataset
 import text_recognizer.metadata.shared as metadata
 

@@ -3,7 +3,10 @@ import argparse
 import ast
 import csv
 import json
+import os
+from pathlib import Path
 import random
+from typing import Union
 
 import numpy as np
 import openai
@@ -19,18 +22,35 @@ from transformers import (
 )
 
 
+# Variables
 # File paths
-ex_path = "example/"
-caption_path = ex_path + "caption.tsv"
-tag_path = ex_path + "tag.tsv"
-question_path = ex_path + "question.json"
-idx_path = ex_path + "idx.json"
-question_feature_path = ex_path + "question_feature.npy"
-image_feature_path = ex_path + "image_feature.npy"
+ex_path = Path(__file__).resolve().parent / "tests" / "support"
+caption_path = ex_path / "caption.tsv"
+tag_path = ex_path / "tag.tsv"
+question_path = ex_path / "question.json"
+idx_path = ex_path / "idx.json"
+question_feature_path = ex_path / "question_feature.npy"
+image_feature_path = ex_path / "image_feature.npy"
 
 # PICa formatting
 img_id = 100  # Random
 question_id = 1005  # Random
+
+# Segmentation model config
+tag_model = "facebook/detr-resnet-50-panoptic"
+tag_revision = "fc15262"
+max_length = 16
+num_beams = 4
+
+# Caption model config
+caption_model = "nlpconnect/vit-gpt2-image-captioning"
+engine = "davinci"
+caption_type = "vinvl_tag"
+n_shot = 16
+n_ensemble = 5
+similarity_metric = "imagequestion"
+coco_path = Path(__file__).resolve().parent / "coco_annotations"
+similarity_path = Path(__file__).resolve().parent / "coco_clip_new"
 
 
 # Helper/main classes
@@ -39,8 +59,7 @@ class PICa_OKVQA:
     Question Answering Class
     """
 
-    def __init__(self, args):
-        self.args = args
+    def __init__(self):
         # load cached image representation (Coco caption & Tags)
         self.inputtext_dict = self.load_cachetext()
 
@@ -49,14 +68,14 @@ class PICa_OKVQA:
             self.traincontext_answer_dict,
             self.traincontext_question_dict,
         ) = self.load_anno(
-            "%s/captions_train2014.json" % args.coco_path,
-            "%s/mscoco_train2014_annotations.json" % args.coco_path,
-            "%s/OpenEnded_mscoco_train2014_questions.json" % args.coco_path,
+            "%s/captions_train2014.json" % coco_path,
+            "%s/mscoco_train2014_annotations.json" % coco_path,
+            "%s/OpenEnded_mscoco_train2014_questions.json" % coco_path,
         )
         self.train_keys = list(self.traincontext_answer_dict.keys())
         self.load_similarity()
 
-    def inference(self):
+    def answer_gen(self):
         _, _, question_dict = self.load_anno(None, None, question_path)
 
         key = list(question_dict.keys())[0]
@@ -73,18 +92,18 @@ class PICa_OKVQA:
         pred_answer_list, pred_prob_list = [], []
         context_key_list = self.get_context_keys(
             key,
-            self.args.similarity_metric,
-            self.args.n_shot * self.args.n_ensemble,
+            similarity_metric,
+            n_shot * n_ensemble,
         )
 
-        for repeat in range(self.args.n_ensemble):
+        for repeat in range(n_ensemble):
             # prompt format following GPT-3 QA API
             prompt = "Please answer the question according to the above context.\n===\n"
-            for ni in range(self.args.n_shot):
+            for ni in range(n_shot):
                 if context_key_list is None:
                     context_key = self.train_keys[random.randint(0, len(self.train_keys) - 1)]
                 else:
-                    context_key = context_key_list[ni + self.args.n_shot * repeat]
+                    context_key = context_key_list[ni + n_shot * repeat]
                 img_context_key = int(context_key.split("<->")[0])
                 while True:  # make sure get context with valid question and answer
                     if (
@@ -111,9 +130,55 @@ class PICa_OKVQA:
             response = None
             try:
                 response = openai.Completion.create(
-                    engine=self.args.engine,
+                    engine=engine,
                     prompt=prompt,
                     max_tokens=5,
+                    logprobs=1,
+                    temperature=0.0,
+                    stream=False,
+                    stop=["\n", "<|endoftext|>"],
+                )
+            except Exception as e:
+                print(e)
+                exit(0)
+
+            plist = []
+            for ii in range(len(response["choices"][0]["logprobs"]["tokens"])):
+                if response["choices"][0]["logprobs"]["tokens"][ii] == "\n":
+                    break
+                plist.append(response["choices"][0]["logprobs"]["token_logprobs"][ii])
+            pred_answer_list.append(self.process_answer(response["choices"][0]["text"]))
+            pred_prob_list.append(sum(plist))
+        maxval = -999.0
+        for ii in range(len(pred_prob_list)):
+            if pred_prob_list[ii] > maxval:
+                maxval, pred_answer = pred_prob_list[ii], pred_answer_list[ii]
+        return pred_answer
+
+    def rationale(self, answer):
+        _, _, question_dict = self.load_anno(None, None, question_path)
+
+        key = list(question_dict.keys())[0]
+        img_key = int(key.split("<->")[0])
+        question, _ = (
+            question_dict[key],
+            self.inputtext_dict[img_key],
+        )
+
+        pred_answer_list, pred_prob_list = [], []
+
+        for _ in range(n_ensemble):
+            # prompt format following GPT-3 QA API
+            prompt = ""
+            prompt += "Q: %s\n" % question
+            prompt += "A: %s\nThis is because" % answer
+
+            response = None
+            try:
+                response = openai.Completion.create(
+                    engine=engine,
+                    prompt=prompt,
+                    max_tokens=10,
                     logprobs=1,
                     temperature=0.0,
                     stream=False,
@@ -160,26 +225,26 @@ class PICa_OKVQA:
         self.valkey2idx = {}
         for ii in val_idx:
             self.valkey2idx[val_idx[ii]] = int(ii)
-        if self.args.similarity_metric == "question":
-            self.train_feature = np.load("%s/coco_clip_vitb16_train2014_okvqa_question.npy" % self.args.similarity_path)
+        if similarity_metric == "question":
+            self.train_feature = np.load("%s/coco_clip_vitb16_train2014_okvqa_question.npy" % similarity_path)
             self.val_feature = torch.load(question_feature_path)
             self.train_idx = json.load(
                 open(
-                    "%s/okvqa_qa_line2sample_idx_train2014.json" % self.args.similarity_path,
+                    "%s/okvqa_qa_line2sample_idx_train2014.json" % similarity_path,
                     "r",
                 )
             )
-        elif self.args.similarity_metric == "imagequestion":
-            self.train_feature = np.load("%s/coco_clip_vitb16_train2014_okvqa_question.npy" % self.args.similarity_path)
+        elif similarity_metric == "imagequestion":
+            self.train_feature = np.load("%s/coco_clip_vitb16_train2014_okvqa_question.npy" % similarity_path)
             self.val_feature = torch.load(question_feature_path)
             self.train_idx = json.load(
                 open(
-                    "%s/okvqa_qa_line2sample_idx_train2014.json" % self.args.similarity_path,
+                    "%s/okvqa_qa_line2sample_idx_train2014.json" % similarity_path,
                     "r",
                 )
             )
             self.image_train_feature = np.load(
-                "%s/coco_clip_vitb16_train2014_okvqa_convertedidx_image.npy" % self.args.similarity_path
+                "%s/coco_clip_vitb16_train2014_okvqa_convertedidx_image.npy" % similarity_path
             )
             self.image_val_feature = torch.load(image_feature_path)
 
@@ -194,7 +259,7 @@ class PICa_OKVQA:
 
     def load_cachetext(self):
         read_tsv = list(csv.reader(open(caption_path, "r"), delimiter="\t"))
-        if "tag" in self.args.caption_type:
+        if "tag" in caption_type:
             tags_dict = self.load_tags()
         row = read_tsv[0]
         idx = int(row[0])
@@ -202,7 +267,7 @@ class PICa_OKVQA:
         if caption == " ":
             caption = ""
         caption_dict = {idx: caption}
-        if self.args.caption_type == "vinvl_tag":
+        if caption_type == "vinvl_tag":
             caption_dict[idx] += ". " + tags_dict[idx]
         return caption_dict
 
@@ -248,54 +313,55 @@ class Pipeline:
     Main inference class
     """
 
-    def __init__(self, args):
-        # Setting this because functions below need it + inputs for setup
-        self.args = args
-
+    def __init__(self):
         # Tagging model setup
-        self.segment = pipeline("image-segmentation", model=args.tag_model, revision=args.tag_revision)
+        self.segment = pipeline("image-segmentation", model=tag_model, revision=tag_revision)
         self.tags = []
 
         # Caption model setup
-        self.caption_model = VisionEncoderDecoderModel.from_pretrained(args.caption_model)
-        self.caption_feature_extractor = ViTFeatureExtractor.from_pretrained(args.caption_model)
-        self.caption_tokenizer = AutoTokenizer.from_pretrained(args.caption_model)
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.caption_model.to(self.device)
+        self.caption_model = VisionEncoderDecoderModel.from_pretrained(caption_model)
+        self.caption_feature_extractor = ViTFeatureExtractor.from_pretrained(caption_model)
+        self.caption_tokenizer = AutoTokenizer.from_pretrained(caption_model)
+        self.device = torch.device("cpu")  # torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        # self.caption_model.to(self.device)
         self.captions = []
 
         # CLIP Setup
         self.clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch16")
         self.clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch16")
 
-        # Generating context idxs
-        self.context_idxs = {"0": str(img_id) + "<->" + str(question_id)}
-        with open(idx_path, "w") as out_file:
-            json.dump(self.context_idxs, out_file)
-
         # PICa Setup
-        openai.api_key = args.api_key
+        openai.api_key_path = Path(__file__).resolve().parent / "key.txt"
 
-    def predict_caption(self, image_path):
+    def predict_caption(self, image):
         images = []
-        i_image = Image.open(image_path)
-        if i_image.mode != "RGB":
-            i_image = i_image.convert(mode="RGB")
-        images.append(i_image)
+        images.append(image)
 
         pixel_values = self.caption_feature_extractor(images=images, return_tensors="pt").pixel_values
         pixel_values = pixel_values.to(self.device)
 
-        gen_kwargs = {"max_length": self.args.max_length, "num_beams": self.args.num_beams}
+        gen_kwargs = {"max_length": max_length, "num_beams": num_beams}
         output_ids = self.caption_model.generate(pixel_values, **gen_kwargs)
 
         preds = self.caption_tokenizer.batch_decode(output_ids, skip_special_tokens=True)
         preds = [pred.strip() for pred in preds]
         return preds[0]
 
-    def predict(self, image: str, question: str) -> str:
+    def predict(self, image: Union[str, Path, Image.Image], question: Union[str, Path]) -> str:
+        if not isinstance(image, Image.Image):
+            image_pil = Image.open(image)
+            if image_pil.mode != "RGB":
+                image_pil = image_pil.convert(mode="RGB")
+        else:
+            image_pil = image
+        if isinstance(question, Path) | os.path.exists(question):
+            with open(question, "r") as f:
+                question_str = f.readline()
+        else:
+            question_str = question
+
         # Generating image tag(s)
-        for dic in self.segment(image):
+        for dic in self.segment(image_pil):
             if not dic["label"]:
                 self.tags.append({"class": " "})
             else:
@@ -305,7 +371,7 @@ class Pipeline:
             tsv_writer.writerow([100, self.tags])
 
         # Generating image caption
-        caption = self.predict_caption(image)
+        caption = self.predict_caption(image_pil)
         if not caption:
             self.captions.append({"caption": " "})
         else:
@@ -315,19 +381,30 @@ class Pipeline:
             tsv_writer.writerow([100, self.captions])
 
         # Generating image/question features
-        inputs = self.clip_processor(text=[question], images=Image.open(image), return_tensors="pt", padding=True)
+        inputs = self.clip_processor(text=[question_str], images=image_pil, return_tensors="pt", padding=True)
         outputs = self.clip_model(**inputs)
         torch.save(outputs.text_embeds, question_feature_path)
         torch.save(outputs.image_embeds, image_feature_path)
 
+        # Generating context idxs
+        context_idxs = {"0": str(img_id) + "<->" + str(question_id)}
+        with open(idx_path, "w") as out_file:
+            json.dump(context_idxs, out_file)
+
         # Answering question
-        questions = {"questions": [{"image_id": img_id, "question": question, "question_id": question_id}]}
+        questions = {"questions": [{"image_id": img_id, "question": question_str, "question_id": question_id}]}
         with open(question_path, "w") as out_file:
             json.dump(questions, out_file)
-        okvqa = PICa_OKVQA(self.args)  # Have to initialize here because necessary files need to be generated
-        answer = okvqa.inference()
+        okvqa = PICa_OKVQA()  # Have to initialize here because necessary files need to be generated
+        answer = okvqa.answer_gen()
+        rationale = okvqa.rationale(answer)
 
-        return answer
+        # Cleaning up generated files
+        for path in [caption_path, tag_path, question_path, idx_path, question_feature_path, image_feature_path]:
+            if os.path.exists(str(path)):
+                os.remove(path)
+
+        return answer + " because " + rationale
 
 
 # Running model
@@ -335,75 +412,15 @@ def main():
     parser = argparse.ArgumentParser()
 
     # Inputs
-    parser.add_argument("--api_key", type=str, required=True, help="api key; https://openai.com/api/")
-    parser.add_argument("--image", type=str, default="example/img.jpg")
-    parser.add_argument("--question", type=str, default="What brand of cereal is depicted?")
-
-    # Segmentation model config
-    parser.add_argument(
-        "--tag_model",
-        type=str,
-        default="facebook/detr-resnet-50-panoptic",
-    )
-    parser.add_argument(
-        "--tag_revision",
-        type=str,
-        default="fc15262",
-    )
-    parser.add_argument(
-        "--max_length",
-        type=int,
-        default=16,
-    )
-    parser.add_argument(
-        "--num_beams",
-        type=int,
-        default=4,
-    )
-
-    # Caption model config
-    parser.add_argument(
-        "--caption_model",
-        type=str,
-        default="nlpconnect/vit-gpt2-image-captioning",
-    )
-
-    # PICa config
-    parser.add_argument(
-        "--engine",
-        type=str,
-        default="davinci",
-        help="api engine; https://openai.com/api/",
-    )
-    parser.add_argument(
-        "--caption_type",
-        type=str,
-        default="vinvl_tag",
-        help="vinvl_tag, vinvl",
-    )
-    parser.add_argument("--n_shot", type=int, default=16, help="number of shots")
-    parser.add_argument("--n_ensemble", type=int, default=5, help="number of ensemble")
-    parser.add_argument(
-        "--similarity_metric",
-        default="imagequestion",
-        help="random/question/imagequestion",
-    )
-    parser.add_argument(
-        "--coco_path",
-        type=str,
-        default="coco_annotations",
-    )
-    parser.add_argument(
-        "--similarity_path",
-        type=str,
-        default="coco_clip_new",
-    )
+    parser.add_argument("--image", type=str, required=True)
+    parser.add_argument("--question", type=str, required=True)
 
     args = parser.parse_args()
 
     # Answering question
-    pipeline = Pipeline(args)
+    pipeline = Pipeline()
     pred_str = pipeline.predict(args.image, args.question)
+
     print(pred_str)
 
 

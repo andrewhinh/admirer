@@ -8,7 +8,7 @@ from defusedxml import ElementTree
 from PIL import Image, ImageOps
 import toml
 
-from text_recognizer import util
+from question_answer import util
 from text_recognizer.data.base_data_module import _download_raw_dataset, load_and_print_info
 import text_recognizer.metadata.iam as metadata
 from text_recognizer.metadata.iam_paragraphs import NEW_LINE_TOKEN

@@ -7,7 +7,7 @@ from typing import Sequence
 import numpy as np
 from PIL import Image, ImageFile
 
-from text_recognizer import util
+from question_answer import util
 from text_recognizer.data.base_data_module import BaseDataModule, load_and_print_info
 from text_recognizer.data.iam import IAM
 from text_recognizer.data.util import BaseDataset, convert_strings_to_labels, resize_image

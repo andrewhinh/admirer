@@ -14,7 +14,7 @@ from text_recognizer.data.base_data_module import _download_raw_dataset, BaseDat
 from text_recognizer.data.util import BaseDataset, split_dataset
 import text_recognizer.metadata.emnist as metadata
 from text_recognizer.stems.image import ImageStem
-from text_recognizer.util import temporary_working_directory
+from question_answer.util import temporary_working_directory
 
 NUM_SPECIAL_TOKENS = metadata.NUM_SPECIAL_TOKENS
 

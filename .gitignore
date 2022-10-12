@@ -4,7 +4,7 @@ data/processed
 data/interim
 
 # GPT-3 API Key
-./question_answer/key.txt
+/question_answer/key.txt
 
 # Editors
 .vscode

@@ -2,6 +2,7 @@
 import argparse
 import os
 from pathlib import Path
+import shutil
 
 import wandb
 
@@ -14,14 +15,9 @@ STAGED_MODEL_TYPE = "prod-ready"
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DIRECTORY = Path("question_answer/")
-PROD_STAGING_ROOT_1 = Path("coco_annotations/")
-CAPTIONS = "captions_train2014.json"
-ANNOTATIONS = "mscoco_train2014_annotations.json"
-QUESTIONS = "OpenEnded_mscoco_train2014_questions.json"
-PROD_STAGING_ROOT_2 = Path("coco_clip_new/")
-IMG_FEAT = "coco_clip_vitb16_train2014_okvqa_convertedidx_image.npy"
-QUES_FEAT = "coco_clip_vitb16_train2014_okvqa_question.npy"
-IDXS = "okvqa_qa_line2sample_idx_train2014.json"
+
+PROD_STAGING_ROOT = PROJECT_ROOT / DIRECTORY / Path("models")
+PROD_PATHS = ["coco_annotations", "coco_clip_new", "transformers"]
 
 api = wandb.Api()
 DEFAULT_ENTITY = api.default_entity
@@ -57,56 +53,25 @@ def download_artifact(artifact_path):
 
 
 def setup(fetch, override):
-    files = []
-    for file in [CAPTIONS, ANNOTATIONS, QUESTIONS]:
-        files.append(PROJECT_ROOT / DIRECTORY / PROD_STAGING_ROOT_1 / file)
-    for file in [IMG_FEAT, QUES_FEAT, IDXS]:
-        files.append(PROJECT_ROOT / DIRECTORY / PROD_STAGING_ROOT_2 / file)
-
     # If overriding, remove local files; otherwise, make sure local files do not match all W&B files
     if fetch:
-        count = 0
-        for file in files:
-            if override:
-                if os.path.exists(file):
-                    os.remove(file)
-            else:
-                if os.path.exists(file):
-                    count += 1
-        if count == 6:
-            return
-
-
-def fix_paths(override):
-    # Put files into subdirectories to match format
-    if not os.path.exists(PROJECT_ROOT / DIRECTORY / PROD_STAGING_ROOT_1):
-        os.mkdir(PROJECT_ROOT / DIRECTORY / PROD_STAGING_ROOT_1)
-    if not os.path.exists(PROJECT_ROOT / DIRECTORY / PROD_STAGING_ROOT_2):
-        os.mkdir(PROJECT_ROOT / DIRECTORY / PROD_STAGING_ROOT_2)
-    for file in [CAPTIONS, ANNOTATIONS, QUESTIONS]:
         if override:
-            os.rename(PROJECT_ROOT / DIRECTORY / file, PROJECT_ROOT / DIRECTORY / PROD_STAGING_ROOT_1 / file)
+            if os.path.exists(PROD_STAGING_ROOT):
+                os.remove(PROD_STAGING_ROOT)
         else:
-            if os.path.exists(PROJECT_ROOT / DIRECTORY / PROD_STAGING_ROOT_1 / file):
-                os.remove(PROJECT_ROOT / DIRECTORY / file)
-            else:
-                os.rename(PROJECT_ROOT / DIRECTORY / file, PROJECT_ROOT / DIRECTORY / PROD_STAGING_ROOT_1 / file)
-    for file in [IMG_FEAT, QUES_FEAT, IDXS]:
-        if override:
-            os.rename(PROJECT_ROOT / DIRECTORY / file, PROJECT_ROOT / DIRECTORY / PROD_STAGING_ROOT_2 / file)
-        else:
-            if os.path.exists(PROJECT_ROOT / DIRECTORY / PROD_STAGING_ROOT_2 / file):
-                os.remove(PROJECT_ROOT / DIRECTORY / file)
-            else:
-                os.rename(PROJECT_ROOT / DIRECTORY / file, PROJECT_ROOT / DIRECTORY / PROD_STAGING_ROOT_2 / file)
+            if os.path.exists(PROD_STAGING_ROOT):
+                return
 
 
 def upload_staged_model(staged_at):
-    for file in [CAPTIONS, ANNOTATIONS, QUESTIONS]:
-        staged_at.add_file(PROJECT_ROOT / DIRECTORY / PROD_STAGING_ROOT_1 / file)
-    for file in [IMG_FEAT, QUES_FEAT, IDXS]:
-        staged_at.add_file(PROJECT_ROOT / DIRECTORY / PROD_STAGING_ROOT_2 / file)
+    os.mkdir(PROD_STAGING_ROOT)
+    for path in PROD_PATHS:
+        shutil.move(PROJECT_ROOT / DIRECTORY / path, PROD_STAGING_ROOT / path)
+    staged_at.add_dir(PROD_STAGING_ROOT)
     wandb.log_artifact(staged_at)
+    for path in PROD_PATHS:
+        shutil.move(PROD_STAGING_ROOT / path, PROJECT_ROOT / DIRECTORY / path)
+    os.rmdir(PROD_STAGING_ROOT)
 
 
 def main(args):
@@ -114,7 +79,6 @@ def main(args):
         staged_files = f"{DEFAULT_ENTITY}/{PROJECT}/{STAGED_MODEL_NAME}:latest"
         artifact = download_artifact(staged_files)
         print_info(artifact)
-        fix_paths(args.override)
         return
 
     with wandb.init(job_type=JOB_TYPE, project=PROJECT):

@@ -38,6 +38,8 @@ per-file-ignores =
   */data/*.py:DAR
   data/*.py:F,I
   *question_answer/text_recognizer/*:I100,I202,I201,DAR101,F401,DAR201 # Temporary
-  *question_answer/util.py:DAR101,F401
   *training/training/run_experiment.py:I202  # Temporary
+  *question_answer/answer.py:C901  # Temporary
+  *question_answer/util.py:DAR101,F401
+
   *app_gradio/app.py:I202

@@ -19,3 +19,4 @@ markupsafe<2.1
 openai==0.23.1
 transformers
 timm
+wandb==0.12.17

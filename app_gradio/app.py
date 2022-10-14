@@ -35,6 +35,7 @@ def main(args):
         share=True,  # should we create a (temporary) public link on https://gradio.app?
         favicon_path=FAVICON,  # what icon should we display in the address bar?
     )
+    print(frontend.server_port)
 
 
 def make_frontend(fn: Callable[[Image, str], str], flagging: bool = False):

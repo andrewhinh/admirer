@@ -1,5 +1,6 @@
-# admirer
+# [admirer](https://admirer.loca.lt/)
 <img width="1525" alt="Screen Shot 2022-10-13 at 9 30 21 PM" src="https://user-images.githubusercontent.com/40700820/195763037-1f5ca861-3eac-4338-8785-f6f16da79ad5.png">
+
 A full-stack ML-powered website that utilizes users’ webcam feeds to answer open-ended questions requiring outside knowledge.
 
 ## Development Setup
@@ -13,7 +14,7 @@ A full-stack ML-powered website that utilizes users’ webcam feeds to answer op
 - Built using PostgreSQL, PyTorch, AWS Lambda, Locust, and ZenML among other tools.
 
 ## Credit
-- [Facebook](https://huggingface.co/facebook/detr-resnet-50-panoptic) for their image segmentation model.
-- [NLP Connect](https://huggingface.co/nlpconnect/vit-gpt2-image-captioning) for their image caption model.
-- OpenAI for their [text and image encoder code](https://huggingface.co/openai/clip-vit-base-patch16) and their [GPT-3 API](https://openai.com/api/).
-- [Microsoft](https://github.com/microsoft/PICa) for their visual question answering code.
+- Facebook for their [image segmentation model](https://huggingface.co/facebook/detr-resnet-50-panoptic).
+- NLP Connect for their [image caption model](https://huggingface.co/nlpconnect/vit-gpt2-image-captioning).
+- OpenAI for their [CLIP text and image encoder code](https://huggingface.co/openai/clip-vit-base-patch16) and their [GPT-3 API](https://openai.com/api/).
+- Microsoft for their [visual question answering code](https://github.com/microsoft/PICa).

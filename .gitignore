@@ -7,7 +7,7 @@ data/interim
 /question_answer/key.txt
 
 # AWS EC2 SSH Key
-/admirer-ec2-key.cer
+/admirer-key.pem
 
 # Editors
 .vscode

@@ -320,8 +320,6 @@ urllib3==1.26.12
     #   sentry-sdk
 uvicorn==0.17.6
     # via gradio
-wandb==0.12.17
-    # via -r requirements/prod.in
 yarl==1.7.2
     # via aiohttp
 zipp==3.8.0

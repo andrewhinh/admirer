@@ -11,7 +11,7 @@ A full-stack ML-powered website that utilizes users’ webcam feeds to answer op
 
 ## Notes
 - Built as the final project for the FSDL 2022 course and a submission for the ZenML Month of MLOps Competition.
-- Built using PostgreSQL, PyTorch, AWS Lambda, Locust, and ZenML among other tools.
+- Built using PyTorch, AWS Lambda, and ZenML among other tools.
 
 ## Credit
 - Facebook for their [image segmentation model](https://huggingface.co/facebook/detr-resnet-50-panoptic).

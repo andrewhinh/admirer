@@ -390,9 +390,9 @@ class Pipeline:
             caption_info, tag_info, questions, context_idxs, outputs.text_embeds, outputs.image_embeds
         )  # Have to initialize here because necessary objects need to be generated
         answer = okvqa.answer_gen()
-        rationale = okvqa.rationale(answer)
+        # rationale = okvqa.rationale(answer)
 
-        return answer + " because " + rationale
+        return answer  # + " because " + rationale
 
 
 # Running model

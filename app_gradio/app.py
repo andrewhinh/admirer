@@ -1,4 +1,4 @@
-"""Provide an image from your webcam and a question and get back out a string!"""
+"""Provide a webcam screenshot and a burning question and get back a lover-like accurate answer!"""
 import argparse
 import json
 import logging
@@ -20,7 +20,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = ""  # do not use GPU
 logging.basicConfig(level=logging.INFO)
 
 APP_DIR = Path(__file__).resolve().parent  # what is the directory for this application?
-FAVICON = APP_DIR / "logo.png"  # path to a small image for display in browser tab and social media
+FAVICON = APP_DIR / "logo.jpeg"  # path to a small image for display in browser tab and social media
 README = APP_DIR / "README.md"  # path to an app readme file in HTML/markdown
 
 DEFAULT_PORT = 11700

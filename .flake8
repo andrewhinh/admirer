@@ -37,9 +37,12 @@ per-file-ignores =
   */__init__.py:F401,I
   */data/*.py:DAR
   data/*.py:F,I
-  *question_answer/text_recognizer/*:I100,I202,I201,DAR101,F401,DAR201 # Temporary
-  *training/training/run_experiment.py:I202  # Temporary
-  *question_answer/answer.py:C901  # Temporary
-  *question_answer/util.py:DAR101,F401
 
+  *question_answer/util.py:DAR101,F401
   *app_gradio/app.py:I202
+
+  # Extra
+  *question_answer/text_recognizer/*:I100,I202,I201,DAR101,F401,DAR201
+  *training/training/run_experiment.py:I202
+  *question_answer/answer.py:C901
+  locust_http_user.py:F841

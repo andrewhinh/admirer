@@ -15,7 +15,7 @@ ENV PYTHONPATH ".:"
 
 # Copy only the relevant directories
 #   note that we use a .dockerignore file to avoid copying logs etc.
-COPY text_recognizer/ ./text_recognizer
+COPY question_answer/ ./question_answer
 COPY app_gradio/ ./app_gradio
 COPY ./.aws/config ./.aws/config
 

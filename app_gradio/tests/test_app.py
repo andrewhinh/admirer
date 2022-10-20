@@ -4,13 +4,17 @@ import os
 import requests
 
 from app_gradio import app
-from text_recognizer import util
+from question_answer import util
 
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
 
-TEST_IMAGE = "text_recognizer/tests/support/paragraphs/a01-077.png"
+TEST_IMAGE = "question_answer/tests/support/images/img.jpg"
+TEST_QUESTION = "question_answer/tests/support/questions/question.txt"
+if os.path.exists(TEST_QUESTION):
+    with open(TEST_QUESTION, "r") as f:
+        TEST_QUESTION = f.readline()
 
 
 def test_local_run():
@@ -28,7 +32,7 @@ def test_local_run():
 
     local_api = f"{local_url}api/predict"
     headers = {"Content-Type": "application/json"}
-    payload = json.dumps({"data": ["data:image/png;base64," + image_b64]})
+    payload = json.dumps({"data": ["data:image/png;base64," + image_b64, "data:question/str;str," + TEST_QUESTION]})
     post_response = requests.post(local_api, data=payload, headers=headers)
     assert "error" not in post_response.json()
     assert "data" in post_response.json()

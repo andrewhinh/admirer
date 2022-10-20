@@ -8,6 +8,7 @@ import random
 from typing import Union
 
 import numpy as np
+from onnxruntime import InferenceSession
 import openai
 from PIL import Image
 import timm
@@ -16,7 +17,6 @@ from transformers import (
     AutoFeatureExtractor,
     AutoModelForImageSegmentation,
     AutoTokenizer,
-    CLIPModel,
     CLIPProcessor,
     pipeline,
     VisionEncoderDecoderModel,
@@ -25,20 +25,24 @@ from transformers import (
 
 
 # Variables
+# Artifact path
+artifact_path = Path(__file__).resolve().parent / "artifacts"
+
 # PICa formatting/config
 img_id = 100  # Random
 question_id = 1005  # Random
 n_shot = 16
 n_ensemble = 5
 similarity_metric = "imagequestion"
-coco_path = Path(__file__).resolve().parent / "coco_annotations"
-similarity_path = Path(__file__).resolve().parent / "coco_clip_new"
+coco_path = artifact_path / "coco_annotations"
+similarity_path = artifact_path / "coco_clip_new"
 
 # Model setup
-transformers_path = Path(__file__).resolve().parent / "transformers"
-resnet_path = transformers_path / "resnet" / "resnet50_a1_0-14fe96d1.pth"
+transformers_path = artifact_path / "transformers"
+onnx_path = artifact_path / "onnx"
 
 # Segmentation model config
+resnet_path = transformers_path / "resnet" / "resnet50_a1_0-14fe96d1.pth"
 tag_model = transformers_path / "facebook" / "detr-resnet-50-panoptic"
 max_length = 16
 num_beams = 4
@@ -49,7 +53,8 @@ engine = "davinci"
 caption_type = "vinvl_tag"
 
 # CLIP Encoders config
-encoder = transformers_path / "openai" / "clip-vit-base-patch16"
+clip_processor = transformers_path / "openai" / "clip-vit-base-patch16"
+clip_onnx = onnx_path / "clip.onnx"
 
 
 # Helper/main classes
@@ -212,11 +217,9 @@ class PICa_OKVQA:
         elif metric == "imagequestion":
             # combined with Q-similairty (image+question)
             lineid = self.valkey2idx[key]
-            question_similarity = np.matmul(self.train_feature, self.val_feature.detach().numpy()[lineid, :])
+            question_similarity = np.matmul(self.train_feature, self.val_feature[lineid, :])
             # end of Q-similairty
-            similarity = question_similarity + np.matmul(
-                self.image_train_feature, self.image_val_feature.detach().numpy()[lineid, :]
-            )
+            similarity = question_similarity + np.matmul(self.image_train_feature, self.image_val_feature[lineid, :])
             index = similarity.argsort()[-n:][::-1]
             return [self.train_idx[str(x)] for x in index]
         else:
@@ -332,20 +335,16 @@ class Pipeline:
         self.caption_feature_extractor = ViTFeatureExtractor.from_pretrained(caption_model)
         self.caption_tokenizer = AutoTokenizer.from_pretrained(caption_model)
         self.device = torch.device("cpu")  # torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        # self.caption_model.to(self.device)
 
         # CLIP Setup
-        self.clip_model = CLIPModel.from_pretrained(encoder)
-        self.clip_processor = CLIPProcessor.from_pretrained(encoder)
+        self.clip_session = InferenceSession(str(clip_onnx))
+        self.clip_processor = CLIPProcessor.from_pretrained(clip_processor)
 
         # PICa Setup
         openai.api_key_path = Path(__file__).resolve().parent / "key.txt"
 
     def predict_caption(self, image):
-        images = []
-        images.append(image)
-
-        pixel_values = self.caption_feature_extractor(images=images, return_tensors="pt").pixel_values
+        pixel_values = self.caption_feature_extractor(images=[image], return_tensors="pt").pixel_values
         pixel_values = pixel_values.to(self.device)
 
         gen_kwargs = {"max_length": max_length, "num_beams": num_beams}
@@ -378,8 +377,11 @@ class Pipeline:
         caption_info = [img_id, caption]
 
         # Generating image/question features
-        inputs = self.clip_processor(text=[question_str], images=image_pil, return_tensors="pt", padding=True)
-        outputs = self.clip_model(**inputs)
+        inputs = self.clip_processor(text=[question_str], images=image_pil, return_tensors="np", padding=True)
+        # for i in session.get_outputs(): print(i.name)
+        outputs = self.clip_session.run(
+            output_names=["logits_per_image", "logits_per_text", "text_embeds", "image_embeds"], input_feed=dict(inputs)
+        )
 
         # Generating context idxs
         context_idxs = {"0": str(img_id) + "<->" + str(question_id)}
@@ -387,7 +389,7 @@ class Pipeline:
         # Answering question
         questions = {"questions": [{"image_id": img_id, "question": question_str, "question_id": question_id}]}
         okvqa = PICa_OKVQA(
-            caption_info, tag_info, questions, context_idxs, outputs.text_embeds, outputs.image_embeds
+            caption_info, tag_info, questions, context_idxs, outputs[2], outputs[3]
         )  # Have to initialize here because necessary objects need to be generated
         answer = okvqa.answer_gen()
         # rationale = okvqa.rationale(answer)

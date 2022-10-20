@@ -3,16 +3,16 @@ data/downloaded
 data/processed
 data/interim
 
+#ADDED###################################
 # Training files
-/question_answer/coco_annotations/
-/question_answer/coco_clip_new/
-/question_answer/transformers/
+/question_answer/artifacts/
 
 # GPT-3 API Key
 /question_answer/key.txt
 
 # AWS EC2 SSH Key
 /admirer-key.pem
+#ADDED###################################
 
 # Editors
 .vscode

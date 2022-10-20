@@ -2,7 +2,6 @@
 import argparse
 import os
 from pathlib import Path
-import shutil
 
 import wandb
 
@@ -16,8 +15,8 @@ STAGED_MODEL_TYPE = "prod-ready"
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DIRECTORY = Path("question_answer/")
 
-PROD_STAGING_ROOT = PROJECT_ROOT / DIRECTORY / Path("models")
-PROD_PATHS = ["coco_annotations", "coco_clip_new", "transformers"]
+PROD_STAGING_ROOT = PROJECT_ROOT / DIRECTORY / Path("artifacts")
+PROD_PATHS = ["coco_annotations", "coco_clip_new", "transformers", "onnx"]
 
 api = wandb.Api()
 DEFAULT_ENTITY = api.default_entity
@@ -47,7 +46,7 @@ def download_artifact(artifact_path):
         artifact = wandb.use_artifact(artifact_path)
     else:  # otherwise, just download the artifact via the API
         artifact = api.artifact(artifact_path)
-    artifact.download(root=PROJECT_ROOT / DIRECTORY)
+    artifact.download(root=PROD_STAGING_ROOT)
 
     return artifact
 
@@ -64,14 +63,8 @@ def setup(fetch, override):
 
 
 def upload_staged_model(staged_at):
-    os.mkdir(PROD_STAGING_ROOT)
-    for path in PROD_PATHS:
-        shutil.move(PROJECT_ROOT / DIRECTORY / path, PROD_STAGING_ROOT / path)
     staged_at.add_dir(PROD_STAGING_ROOT)
     wandb.log_artifact(staged_at)
-    for path in PROD_PATHS:
-        shutil.move(PROD_STAGING_ROOT / path, PROJECT_ROOT / DIRECTORY / path)
-    os.rmdir(PROD_STAGING_ROOT)
 
 
 def main(args):
@@ -91,12 +84,12 @@ def _setup_parser():
     parser.add_argument(
         "--fetch",
         action="store_true",
-        help=f"If provided, download the latest version of artifact files to {PROJECT / DIRECTORY}.",
+        help=f"If provided, download the latest version of artifact files to {PROD_STAGING_ROOT}.",
     )
     parser.add_argument(
         "--override",
         action="store_true",
-        help=f"If provided, override local files at {PROJECT / DIRECTORY} with downloaded files.",
+        help=f"If provided, override local files at {PROD_STAGING_ROOT} with downloaded files.",
     )
     return parser
 

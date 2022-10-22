@@ -49,7 +49,7 @@ num_beams = 4
 
 # Caption model config
 caption_model = transformers_path / "nlpconnect" / "vit-gpt2-image-captioning"
-engine = "davinci"
+engine = "text-davinci-002"
 caption_type = "vinvl_tag"
 
 # CLIP Encoders config

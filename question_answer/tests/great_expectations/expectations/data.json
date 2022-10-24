@@ -1,0 +1,93 @@
+{
+  "data_asset_type": null,
+  "expectation_suite_name": "data",
+  "expectations": [
+    {
+      "expectation_type": "expect_table_columns_to_match_ordered_list",
+      "kwargs": {
+        "column_list": [
+          "webcam",
+          "id",
+          "question",
+          "answer",
+          "annotator",
+          "annotation_id",
+          "created_at",
+          "updated_at",
+          "lead_time"
+        ]
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_compound_columns_to_be_unique",
+      "kwargs": {
+        "column_list": [
+          "question",
+          "answer"
+        ]
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "webcam"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "question"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "answer"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_unique",
+      "kwargs": {
+        "column": "webcam"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_of_type",
+      "kwargs": {
+        "column": "question",
+        "type_": "str"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_of_type",
+      "kwargs": {
+        "column": "answer",
+        "type_": "str"
+      },
+      "meta": {}
+    }
+  ],
+  "ge_cloud_id": null,
+  "meta": {
+    "citations": [
+      {
+        "batch_request": {
+          "data_asset_name": "data.json",
+          "data_connector_name": "default_inferred_data_connector_name",
+          "datasource_name": "local_data",
+          "limit": 1000
+        },
+        "citation_date": "2022-10-24T17:52:40.389330Z",
+        "comment": "Created suite added via CLI"
+      }
+    ],
+    "great_expectations_version": "0.15.28"
+  }
+}

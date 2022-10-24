@@ -2,6 +2,7 @@
 boltons
 coverage[toml]
 defusedxml
+great-expectations
 itermplot
 ipywidgets
 matplotlib

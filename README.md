@@ -6,7 +6,7 @@ A full-stack ML-powered website that utilizes users’ webcam feeds to answer op
 ## Development Setup
 1. Clone repo.
 2. Follow the steps listed [here](https://github.com/full-stack-deep-learning/fsdl-text-recognizer-2022-labs/tree/main/setup).
-3. Run `pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113` if you're using newer NVIDIA RTX GPU.
+3. Run `pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113` if you're using a newer NVIDIA RTX GPU.
 4. Run `echo "REPLACE" >> ./question_answer/key.txt`, replacing `REPLACE` with your OpenAI API key and reactivate the environment.
 5. Look at:
 - `training/` for the model training, experiment tracking, and model staging scripts.

@@ -1,0 +1,79 @@
+[
+  {
+    "webcam": "https://admirer-pica.s3.us-west-1.amazonaws.com/images/001_07.png",
+    "id": 7,
+    "question": "What are my plans after work?",
+    "answer": "What plans?",
+    "annotator": 2,
+    "annotation_id": 8,
+    "created_at": "2022-10-24T03:51:41.209493Z",
+    "updated_at": "2022-10-24T03:51:41.209513Z",
+    "lead_time": 35.848
+  },
+  {
+    "webcam": "https://admirer-pica.s3.us-west-1.amazonaws.com/images/001_05.png",
+    "id": 5,
+    "question": "What is my job?",
+    "answer": "Engineer or doctor, hopefully",
+    "annotator": 2,
+    "annotation_id": 6,
+    "created_at": "2022-10-24T03:43:32.106125Z",
+    "updated_at": "2022-10-24T03:51:00.220454Z",
+    "lead_time": 111.115
+  },
+  {
+    "webcam": "https://admirer-pica.s3.us-west-1.amazonaws.com/images/001_04.png",
+    "id": 4,
+    "question": "How fast could I get to the door?",
+    "answer": "Nope",
+    "annotator": 2,
+    "annotation_id": 5,
+    "created_at": "2022-10-24T03:35:45.648711Z",
+    "updated_at": "2022-10-24T03:50:47.307202Z",
+    "lead_time": 153.147
+  },
+  {
+    "webcam": "https://admirer-pica.s3.us-west-1.amazonaws.com/images/001_03.png",
+    "id": 3,
+    "question": "Where am I?",
+    "answer": "A science lab",
+    "annotator": 2,
+    "annotation_id": 4,
+    "created_at": "2022-10-24T03:34:22.241082Z",
+    "updated_at": "2022-10-24T03:49:54.841793Z",
+    "lead_time": 62.538000000000004
+  },
+  {
+    "webcam": "https://admirer-pica.s3.us-west-1.amazonaws.com/images/001_02.png",
+    "id": 2,
+    "question": "Who else is in the room with me?",
+    "answer": "Your distant coworker",
+    "annotator": 2,
+    "annotation_id": 3,
+    "created_at": "2022-10-24T03:33:06.466078Z",
+    "updated_at": "2022-10-24T03:46:42.266578Z",
+    "lead_time": 24.366999999999997
+  },
+  {
+    "webcam": "https://admirer-pica.s3.us-west-1.amazonaws.com/images/001_01.png",
+    "id": 1,
+    "question": "What time of day is it?",
+    "answer": "Time for lunch",
+    "annotator": 2,
+    "annotation_id": 1,
+    "created_at": "2022-10-23T22:41:34.773638Z",
+    "updated_at": "2022-10-24T03:46:32.702270Z",
+    "lead_time": 190.056
+  },
+  {
+    "webcam": "https://admirer-pica.s3.us-west-1.amazonaws.com/images/001_06.png",
+    "id": 6,
+    "answer": "Old enough for minimum wage",
+    "question": "How old am I?",
+    "annotator": 2,
+    "annotation_id": 7,
+    "created_at": "2022-10-24T03:43:57.971079Z",
+    "updated_at": "2022-10-24T03:43:57.971105Z",
+    "lead_time": 24.01
+  }
+]

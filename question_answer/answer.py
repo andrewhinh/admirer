@@ -31,7 +31,7 @@ artifact_path = Path(__file__).resolve().parent / "artifacts"
 # PICa formatting/config
 img_id = 100  # Random
 question_id = 1005  # Random
-n_shot = 16
+n_shot = 32
 n_ensemble = 5
 similarity_metric = "imagequestion"
 coco_path = artifact_path / "coco_annotations"
@@ -160,6 +160,8 @@ class PICa_OKVQA:
         for ii in range(len(pred_prob_list)):
             if pred_prob_list[ii] > maxval:
                 maxval, pred_answer = pred_prob_list[ii], pred_answer_list[ii]
+        if not pred_answer or pred_answer == " ":
+            pred_answer = "?"
         return pred_answer
 
     def rationale(self, answer):

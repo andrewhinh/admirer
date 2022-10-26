@@ -12,7 +12,7 @@ A full-stack ML-powered website that utilizes users’ webcam feeds to answer op
 - `training/` for the model training, experiment tracking, and model staging scripts.
 - `question_answer/` for the inference scripts.
 - `app_gradio/` for the frontend scripts.
-- `test.ipynb` for local testing of working with AWS S3 + LabelStudio, running Gradio, setting up AWS Lambda, and load testing with Locust.
+- `test.ipynb` for local testing of data management using AWS S3, LabelStudio, and ZenML, running Gradio, setting up AWS Lambda, and load testing with Locust.
 
 ## Notes
 - Built as the final project for the FSDL 2022 course and a submission for the ZenML Month of MLOps Competition.

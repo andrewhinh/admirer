@@ -5,6 +5,7 @@ defusedxml
 great-expectations
 itermplot
 ipywidgets
+language_tool_python
 matplotlib
 notebook
 nltk

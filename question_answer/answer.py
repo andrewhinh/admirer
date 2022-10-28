@@ -79,6 +79,16 @@ class PICa_OKVQA:
             "%s/OpenEnded_mscoco_train2014_questions.json" % coco_path,
             None,
         )
+        (
+            self.traincontext_caption_dict,
+            self.traincontext_answer_dict,
+            self.traincontext_question_dict,
+        ) = self.add_anno(
+            "%s/admirer-pica.json" % coco_path,
+            self.traincontext_caption_dict,
+            self.traincontext_answer_dict,
+            self.traincontext_question_dict,
+        )
         self.train_keys = list(self.traincontext_answer_dict.keys())
         self.load_similarity(context_idxs, question_features, image_features)
 
@@ -303,6 +313,26 @@ class PICa_OKVQA:
             if str(sample["image_id"]) + "<->" + str(sample["question_id"]) not in question_dict:
                 question_dict[str(sample["image_id"]) + "<->" + str(sample["question_id"])] = sample["question"]
         return caption_dict, answer_dict, question_dict
+
+    def add_anno(self, add, traincontext_caption_dict, traincontext_answer_dict, traincontext_question_dict):
+        if add is not None:
+            add_dict = json.load(open(add, "r"))
+
+        caption_add = dict(zip(list(add_dict["image_id"].values()), list(add_dict["caption"].values())))
+        combine_ids = [
+            str(image_id) + "<->" + str(question_id)
+            for image_id, question_id in zip(
+                list(add_dict["image_id"].values()), list(add_dict["question_id"].values())
+            )
+        ]
+        answer_add = dict(zip(combine_ids, list(add_dict["answer"].values())))
+        question_add = dict(zip(combine_ids, list(add_dict["question"].values())))
+
+        traincontext_caption_dict.update(caption_add)
+        traincontext_answer_dict.update(answer_add)
+        traincontext_question_dict.update(question_add)
+
+        return traincontext_caption_dict, traincontext_answer_dict, traincontext_question_dict
 
     def process_answer(self, answer):
         answer = answer.replace(".", "").replace(",", "").lower()

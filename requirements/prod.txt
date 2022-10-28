@@ -20,8 +20,10 @@ async-timeout==4.0.2
     # via aiohttp
 asynctest==0.13.0
     # via aiohttp
-attrs==21.4.0
-    # via aiohttp
+attrs==20.3.0
+    # via
+    #   -r requirements/prod.in
+    #   aiohttp
 backoff==1.10.0
     # via analytics-python
 bcrypt==3.2.2
@@ -124,7 +126,7 @@ markdown-it-py[linkify,plugins]==2.1.0
     # via
     #   gradio
     #   mdit-py-plugins
-markupsafe==2.0.1
+markupsafe==1.1.1
     # via
     #   -r requirements/prod.in
     #   jinja2
@@ -165,8 +167,9 @@ openpyxl==3.0.10
     # via openai
 orjson==3.7.2
     # via gradio
-packaging==21.3
+packaging==20.9
     # via
+    #   -r requirements/prod.in
     #   huggingface-hub
     #   matplotlib
     #   onnxruntime
@@ -201,12 +204,14 @@ pynacl==1.5.0
     # via paramiko
 pyngrok==5.1.0
     # via -r requirements/prod.in
-pyparsing==3.0.9
+pyparsing==2.4.2
     # via
+    #   -r requirements/prod.in
     #   matplotlib
     #   packaging
-python-dateutil==2.8.1
+python-dateutil==2.8.2
     # via
+    #   -r requirements/prod.in
     #   analytics-python
     #   botocore
     #   matplotlib
@@ -215,8 +220,9 @@ python-multipart==0.0.5
     # via gradio
 pytz==2022.1
     # via pandas
-pyyaml==6.0
+pyyaml==5.4.1
     # via
+    #   -r requirements/prod.in
     #   huggingface-hub
     #   pyngrok
     #   timm

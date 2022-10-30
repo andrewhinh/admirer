@@ -7,7 +7,7 @@ from typing import Any
 import wandb
 from wandb import Artifact
 from wandb.sdk.wandb_run import Run
-
+from dotenv import load_dotenv
 
 # Variables
 PROJECT = "admirer"
@@ -20,6 +20,9 @@ DIRECTORY = Path("question_answer/")
 
 PROD_STAGING_ROOT = PROJECT_ROOT / DIRECTORY / Path("artifacts")
 PROD_PATHS = ["coco_annotations", "coco_clip_new", "transformers", "onnx"]
+
+# Load environtal variables from .env file
+load_dotenv()
 
 api = wandb.Api()
 DEFAULT_ENTITY = api.default_entity

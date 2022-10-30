@@ -22,6 +22,7 @@ from transformers import (
     VisionEncoderDecoderModel,
     ViTFeatureExtractor,
 )
+from dotenv import load_dotenv
 
 
 # Variables
@@ -55,6 +56,9 @@ caption_type = "vinvl_tag"
 # CLIP Encoders config
 clip_processor = transformers_path / "openai" / "clip-vit-base-patch16"
 clip_onnx = onnx_path / "clip.onnx"
+
+# Load environment variables
+load_dotenv()
 
 
 # Helper/main classes
@@ -373,7 +377,7 @@ class Pipeline:
         self.clip_processor = CLIPProcessor.from_pretrained(clip_processor)
 
         # PICa Setup
-        openai.api_key_path = Path(__file__).resolve().parent / "key.txt"
+        openai.api_key = os.getenv("OPENAI_API_KEY")
 
     def predict_caption(self, image):
         pixel_values = self.caption_feature_extractor(images=[image], return_tensors="pt").pixel_values

@@ -7,7 +7,7 @@ data/interim
 # Training/context data
 /data/downloaded/
 
-/label-env/
+/data_manage/label-env/
 
 # Production files
 /question_answer/artifacts/

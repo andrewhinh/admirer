@@ -21,9 +21,7 @@ async-timeout==4.0.2
 asynctest==0.13.0
     # via aiohttp
 attrs==20.3.0
-    # via
-    #   -r requirements/prod.in
-    #   aiohttp
+    # via aiohttp
 backoff==1.10.0
     # via analytics-python
 bcrypt==3.2.2
@@ -169,7 +167,6 @@ orjson==3.7.2
     # via gradio
 packaging==20.9
     # via
-    #   -r requirements/prod.in
     #   huggingface-hub
     #   matplotlib
     #   onnxruntime
@@ -206,12 +203,10 @@ pyngrok==5.1.0
     # via -r requirements/prod.in
 pyparsing==2.4.2
     # via
-    #   -r requirements/prod.in
     #   matplotlib
     #   packaging
 python-dateutil==2.8.2
     # via
-    #   -r requirements/prod.in
     #   analytics-python
     #   botocore
     #   matplotlib
@@ -222,7 +217,6 @@ pytz==2022.1
     # via pandas
 pyyaml==5.4.1
     # via
-    #   -r requirements/prod.in
     #   huggingface-hub
     #   pyngrok
     #   timm

@@ -26,8 +26,8 @@
     - `tasks`: the pipeline testing code.
     - `training` for the model development code using `PyTorch`, `PyTorch Lightning`, and `Weights and Biases`.
 - From the main directory, run:
-    - `python3 ./training/stage_model --fetch` to download the model weights and GPT-3 context examples locally.
-    - `python3 ./app_gradio/tests/test_app.py` to test the Gradio frontend by launching and pinging the frontend locally.
+    - `python ./training/stage_model --fetch` to download the model weights and GPT-3 context examples locally.
+    - `python ./app_gradio/tests/test_app.py` to test the Gradio frontend by launching and pinging the frontend locally.
     - `. ./training/tests/test_memorize_caption.sh` to test the caption model's ability to memorize a single batch.
     - the shell scripts in `tasks` to test various aspects of the model pipeline (Ex: `. ./tasks/REPLACE`, replacing `REPLACE` with the corresponding shell script path).
 - The other files and folders support the main folders.

@@ -1,35 +1,38 @@
 # [admirer](https://admirer.loca.lt/)
 <img width="1525" alt="Screen Shot 2022-10-13 at 9 30 21 PM" src="https://user-images.githubusercontent.com/40700820/195763037-1f5ca861-3eac-4338-8785-f6f16da79ad5.png">
 
-A full-stack ML-powered website that utilizes users’ webcam feeds to answer open-ended questions requiring outside knowledge.
+# Description
+- A full-stack ML-powered website that utilizes users’ webcam feeds to answer open-ended questions requiring outside knowledge.
+- The website and repository together serve as an open-source demonstration and implementation of a visual question-answering model in a full-stack machine learning product. The visual question-answering pipeline is largely inspired by a paper from Microsoft; in short, we prompt GPT-3 with a generated image caption and object tag list, the question-answer pair, and context examples that demonstrate the task at hand.
+- The website was built by Andrew Hinh as a top-25 final project for the FSDL 2022 course and continued by The Transformees (Andrew Hinh and Aleks Hiidenhovi, a FSDL alum) as a submission for the ZenML Month of MLOps Competition.
 
-"""
-Short summary / overview of your project
-Please give a SHORT summary (max 1500 characters) of your project, the problem you chose to solve and your technical solution.
-"""
-
-## Development Setup
+# Development
+## Setup
 1. Clone repo.
-2. Follow the steps listed [here](https://github.com/full-stack-deep-learning/fsdl-text-recognizer-2022-labs/tree/main/setup).
+2. Follow the steps listed [here](https://github.com/full-stack-deep-learning/fsdl-text-recognizer-2022-labs/tree/main/setup#local), replacing the following commands:
+    - git clone https://github.com/full-stack-deep-learning/fsdl-text-recognizer-2022-labs.git -> git clone https://github.com/andrewhinh/admirer.git
+    - cd fsdl-text-recognizer-2022-labs -> cd admirer
+    - conda activate fsdl-text-recognizer-2022 -> conda activate admirer
 3. Run `pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113` if you're using a newer NVIDIA RTX GPU.
-4. Run `echo "REPLACE" >> ./question_answer/key.txt`, replacing `REPLACE` with your OpenAI API key and reactivate the environment.
-5. Look at:
-- `training/` for the model training, experiment tracking, and model staging scripts.
-- `question_answer/` for the inference scripts.
-- `app_gradio/` for the frontend scripts.
-- `test.ipynb` for local testing of data management using AWS S3, LabelStudio, and ZenML, running Gradio, setting up AWS Lambda, and load testing with Locust.
-
-"""
-explains how your code / repository is structured
-(where relevant) explains how to run the code and what stacks and stack components were used
-"""
-
+4. Run `echo "REPLACE" >> ./question_answer/key.txt`, replacing `REPLACE` with your OpenAI API key and reactivate (just activate again) the environment.
 ## Notes
-- Built by Andrew Hinh as the final project for the FSDL 2022 course.
-- Continued by The Transformees (Andrew Hinh and Aleks Hiidenhovi) as a submission for the ZenML Month of MLOps Competition.
-- Built using PyTorch, AWS Lambda, and ZenML among other tools.
+- The repo is separated into folders that each describe a part of the ML-project lifecycle:
+    - `api_serverless`: the backend handler code using `AWS Lambda`.
+    - `app_gradio`: the frontend code using `Gradio`.
+    - `backend_setup`: the `AWS Lambda` backend setup code.
+    - `data_manage`: the data management code using `boto3` for data exploration and `ZenML` + `Great Expectations` for data validation.
+    - `load_test`: the load testing code using `Locust`.
+    - `question_answer`: the inference code.
+    - `tasks`: the pipeline testing code.
+    - `training` for the model development code using `PyTorch`, `PyTorch Lightning`, and `Weights and Biases`.
+- From the main directory, run:
+    - `python3 ./training/stage_model --fetch` to download the model weights and GPT-3 context examples locally.
+    - `python3 ./app_gradio/tests/test_app.py` to test the Gradio frontend by launching and pinging the frontend locally.
+    - `. ./training/tests/test_memorize_caption.sh` to test the caption model's ability to memorize a single batch.
+    - the shell scripts in `tasks` to test various aspects of the model pipeline (Ex: `. ./tasks/REPLACE`, replacing `REPLACE` with the corresponding shell script path).
+- The other files and folders support the main folders.
 
-## Credit
+# Credit
 - GI4E for their [database](https://www.unavarra.es/gi4e/databases/gi4e/?languageId=1) and [Scale AI](https://scale.com/) for their annotations.
 - Facebook for their [image segmentation model](https://huggingface.co/facebook/detr-resnet-50-panoptic).
 - NLP Connect for their [image caption model](https://huggingface.co/nlpconnect/vit-gpt2-image-captioning).

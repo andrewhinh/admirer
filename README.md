@@ -30,7 +30,6 @@
 - From the main directory, run:
     - `python app_gradio/app.py --flagging` to start a local Gradio app.
     - `python -c "from app_gradio.tests.test_app import test_local_run; test_local_run()"` to test the Gradio frontend by launching and pinging the frontend locally.
-    - `. ./backend_setup/deploy.sh` to start a local continuous deployment server that automatically updates the backend with every new commit.
     - `. ./training/tests/test_memorize_caption.sh` to test the caption model's ability to memorize a single batch.
     - the shell scripts in `tasks` to test various aspects of the model pipeline (Ex: `. ./tasks/REPLACE`, replacing `REPLACE` with the corresponding shell script path).
 - The other files and folders support the main folders.

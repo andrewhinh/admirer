@@ -23,13 +23,14 @@
     - `backend_setup`: the `AWS Lambda` backend setup and continuous deployment code.
     - `data_manage`: the data management code using `boto3` for data exploration and `ZenML` + `Great Expectations` for data validation.
     - `load_test`: the load testing code using `Locust`.
-    - `monitoring`: the continual learning code using `Gradio's` flagging feature.
+    - `monitoring`: the model monitoring code using `Gradio's` flagging feature.
     - `question_answer`: the inference code.
     - `tasks`: the pipeline testing code.
     - `training` for the model development code using `PyTorch`, `PyTorch Lightning`, and `Weights and Biases`.
 - From the main directory, run:
-    - `python3 app_gradio/app.py --flagging` to start a local Gradio app.
+    - `python app_gradio/app.py --flagging` to start a continuously running local Gradio app.
     - `python -c "from app_gradio.tests.test_app import test_local_run; test_local_run()"` to test the Gradio frontend by launching and pinging the frontend locally.
+    - `. ./backend_setup/deploy.sh` to start a continuous deployment server.
     - `. ./training/tests/test_memorize_caption.sh` to test the caption model's ability to memorize a single batch.
     - the shell scripts in `tasks` to test various aspects of the model pipeline (Ex: `. ./tasks/REPLACE`, replacing `REPLACE` with the corresponding shell script path).
 - The other files and folders support the main folders.

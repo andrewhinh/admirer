@@ -42,10 +42,13 @@ def make_frontend(fn: Callable[[Image, str], str], flagging: bool = False):
     img_examples_dir = Path("question_answer") / "tests" / "support" / "images"
     img_example_fnames = [elem for elem in os.listdir(img_examples_dir) if elem.endswith(".jpg")]
     img_example_paths = [img_examples_dir / fname for fname in img_example_fnames]
+    img_example_paths = sorted(img_example_paths)
 
     question_examples_dir = Path("question_answer") / "tests" / "support" / "questions"
     question_example_fnames = [elem for elem in os.listdir(question_examples_dir) if elem.endswith(".txt")]
     question_example_paths = [question_examples_dir / fname for fname in question_example_fnames]
+    question_example_paths = sorted(question_example_paths)
+
     questions = []
     for path in question_example_paths:
         with open(path, "r") as f:

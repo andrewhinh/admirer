@@ -14,20 +14,22 @@
     - cd fsdl-text-recognizer-2022-labs -> cd admirer
     - conda activate fsdl-text-recognizer-2022 -> conda activate admirer
 3. Run `pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113` if you're using a newer NVIDIA RTX GPU.
-4. Run `echo "REPLACE" >> ./question_answer/key.txt`, replacing `REPLACE` with your OpenAI API key and reactivate (just activate again) the environment.
+4. Sign up for OpenAI's API to get an API key and run `echo "REPLACE" >> ./question_answer/key.txt`, replacing `REPLACE` with your OpenAI API key and reactivate (just activate again) the environment.
+5. Run `python ./training/stage_model --fetch` to download the model weights and GPT-3 context examples locally.
 ## Notes
 - The repo is separated into folders that each describe a part of the ML-project lifecycle:
     - `api_serverless`: the backend handler code using `AWS Lambda`.
     - `app_gradio`: the frontend code using `Gradio`.
-    - `backend_setup`: the `AWS Lambda` backend setup code.
+    - `backend_setup`: the `AWS Lambda` backend setup and continuous deployment code.
     - `data_manage`: the data management code using `boto3` for data exploration and `ZenML` + `Great Expectations` for data validation.
     - `load_test`: the load testing code using `Locust`.
+    - `monitoring`: the continual learning code using `Gradio's` flagging feature.
     - `question_answer`: the inference code.
     - `tasks`: the pipeline testing code.
     - `training` for the model development code using `PyTorch`, `PyTorch Lightning`, and `Weights and Biases`.
 - From the main directory, run:
-    - `python ./training/stage_model --fetch` to download the model weights and GPT-3 context examples locally.
-    - `python ./app_gradio/tests/test_app.py` to test the Gradio frontend by launching and pinging the frontend locally.
+    - `python3 app_gradio/app.py --flagging` to start a local Gradio app.
+    - `python -c "from app_gradio.tests.test_app import test_local_run; test_local_run()"` to test the Gradio frontend by launching and pinging the frontend locally.
     - `. ./training/tests/test_memorize_caption.sh` to test the caption model's ability to memorize a single batch.
     - the shell scripts in `tasks` to test various aspects of the model pipeline (Ex: `. ./tasks/REPLACE`, replacing `REPLACE` with the corresponding shell script path).
 - The other files and folders support the main folders.

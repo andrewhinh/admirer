@@ -12,6 +12,7 @@ from text_recognizer import callbacks as cb
 
 # Hide lines above until Lab 04
 from text_recognizer import lit_models
+
 from training.util import DATA_CLASS_MODULE, import_class, MODEL_CLASS_MODULE, setup_data_and_model_from_args
 
 

@@ -43,6 +43,6 @@ per-file-ignores =
 
   # Extra
   *question_answer/text_recognizer/*:I100,I202,I201,DAR101,F401,DAR201
-  *training/training/run_experiment.py:I202
+  *training/run_experiment.py:I100,I202
   *question_answer/answer.py:C901
   locust_http_user.py:F841

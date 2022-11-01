@@ -5,7 +5,7 @@ set +e
 FAILURE=false
 
 # unit tests check whether current best model is working, so we stage it
-python3 ./training/stage_model.py --fetch || FAILURE=true
+python ./training/stage_model.py --fetch || FAILURE=true
 # pytest configuration in pyproject.toml
 python -m pytest || FAILURE=true
 

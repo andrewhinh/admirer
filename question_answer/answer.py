@@ -329,9 +329,16 @@ class PICa_OKVQA:
             if id not in question_dict:
                 question_dict[id] = sample["question"]
                 
-        return caption_dict, answer_dict, question_dict
+        return dict(caption_dict), dict(answer_dict), dict(question_dict)
 
-    def add_anno(self, add, traincontext_caption_dict, traincontext_answer_dict, traincontext_question_dict):
+    def add_anno(
+        self, 
+        add: Optional[Path], 
+        traincontext_caption_dict: Dict[Any, List], 
+        traincontext_answer_dict: Dict[Any, List], 
+        traincontext_question_dict: Dict[Any, List]
+    ):
+        """Add extra annotations to the annotations dictionaries"""
         if add is not None:
             add_dict = json.load(open(add, "r"))
 

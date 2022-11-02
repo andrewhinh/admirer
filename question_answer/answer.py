@@ -237,7 +237,7 @@ class PICa_OKVQA:
         return pred_answer
 
 
-    def get_context_keys(self, key: str, metric: str, n: int):
+    def get_context_keys(self, key: str, metric: str, n: int) -> List[str]:
         """Get context keys based on similarity scores"""
         # Throw error with an invalid metric
         if metric not in similarity_metrics:
@@ -253,7 +253,7 @@ class PICa_OKVQA:
         return [self.train_idx[str(x)] for x in index]
 
 
-    def load_similarity(self, context_idxs: Dict[str, str], question_features, image_features):
+    def load_similarity(self, context_idxs: Dict[str, str], question_features, image_features) -> None:
         self.valkey2idx: Dict[str, int] = {}
         for idx in context_idxs:
             self.valkey2idx[context_idxs[idx]] = int(idx)
@@ -265,7 +265,7 @@ class PICa_OKVQA:
         # Add train feature, val feature and train idx for all valid metrics
         self.train_feature = np.load("%s/coco_clip_vitb16_train2014_okvqa_question.npy" % similarity_path)
         self.val_feature = question_features
-        self.train_idx = json.load(
+        self.train_idx: Dict[str, str] = json.load(
             open(
                 "%s/okvqa_qa_line2sample_idx_train2014.json" % similarity_path,
                 "r",
@@ -280,7 +280,7 @@ class PICa_OKVQA:
             self.image_val_feature = image_features
 
 
-    def load_tags(self):
+    def load_tags(self) -> Dict[int, str]:
         """Loads tags for an image"""
         tags_dict = {}
         image_id, tags = self.tag_info
@@ -292,7 +292,7 @@ class PICa_OKVQA:
         return tags_dict
 
 
-    def load_cachetext(self, caption_info: Tuple[int, str]):
+    def load_cachetext(self, caption_info: Tuple[int, str]) -> Dict[int, str]:
         """Loads and adds cachetect to the caption"""
         if "tag" in caption_type: 
             tags_dict = self.load_tags()
@@ -303,24 +303,33 @@ class PICa_OKVQA:
         return caption_dict
 
 
-    def load_anno(self, coco_caption_file: Optional[Path], answer_anno_file: Optional[Path], question_anno_file: Optional[Path], questions):
+    def load_anno(
+        self, 
+        coco_caption_file: Optional[Path], 
+        answer_anno_file: Optional[Path], 
+        question_anno_file: Optional[Path], 
+        questions
+    ) -> Tuple[Dict[int, List[str]], Dict[str, List[str]], Dict[str, str]]:
         """Loads annotation from a caption file"""
         
         # Define default dictionaries
-        caption_dict, answer_dict, question_dict = defaultdict(list), defaultdict(list), defaultdict(list)
+        caption_dict: defaultdict[int, List[str]] = defaultdict(list)
+        answer_dict: defaultdict[str, List[str]] = defaultdict(list)
+        question_dict: defaultdict[str, str] = defaultdict(list)
         
         # Create caption dictionary
         if coco_caption_file is not None:
             coco_caption = json.load(open(coco_caption_file, "r"))
             if isinstance(coco_caption, dict):
-                coco_caption = coco_caption["annotations"]
+                coco_caption: List[Dict[str, Union[str, int]]] = coco_caption["annotations"]
             for sample in coco_caption:
-                caption_dict[sample["image_id"]].append(sample["caption"])
+                caption_dict[sample["image_id"]].append(sample["caption"]) # int -> sample[image_id] 
                 
         # Create answer dictionary
         if answer_anno_file is not None:
-            answer_anno = json.load(open(answer_anno_file, "r"))
-            for sample in answer_anno["annotations"]:
+            answer_data = json.load(open(answer_anno_file, "r"))
+            answer_annotations: List[Dict[str, Any]] = answer_data["annotations"]
+            for sample in answer_annotations:
                 id = str(sample["image_id"]) + "<->" + str(sample["question_id"])
                 if id not in answer_dict:
                     answer_dict[id] = [
@@ -329,10 +338,12 @@ class PICa_OKVQA:
                     
         # Create question dictionary
         if question_anno_file is not None:
-            question_anno = json.load(open(question_anno_file, "r"))
+            question_data = json.load(open(question_anno_file, "r"))
         else:
-            question_anno = questions
-        for sample in question_anno["questions"]:
+            question_data = questions
+
+        question_annotations: List[Dict[str, Union[str, int]]] = question_data["questions"]
+        for sample in question_annotations:
             id = str(sample["image_id"]) + "<->" + str(sample["question_id"])
             if id not in question_dict:
                 question_dict[id] = sample["question"]
@@ -343,9 +354,9 @@ class PICa_OKVQA:
     def add_anno(
         self, 
         add: Optional[Path], 
-        traincontext_caption_dict: Dict[Any, List], 
-        traincontext_answer_dict: Dict[Any, List], 
-        traincontext_question_dict: Dict[Any, List]
+        traincontext_caption_dict: Dict[int, List[str]], 
+        traincontext_answer_dict: Dict[str, List[str]], 
+        traincontext_question_dict: Dict[str, str]
     ):
         """Add extra annotations to the annotations dictionaries"""
         if add is not None:

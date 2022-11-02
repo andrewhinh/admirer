@@ -6,7 +6,7 @@ import time
 
 from torchmetrics.functional.text.cer import char_error_rate
 
-from text_recognizer.paragraph_text_recognizer import ParagraphTextRecognizer
+from question_answer.text_recognizer.paragraph_text_recognizer import ParagraphTextRecognizer
 
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""

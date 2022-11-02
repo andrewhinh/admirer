@@ -6,8 +6,8 @@ import unittest
 import pytorch_lightning as pl
 import torch
 
-from text_recognizer.data import IAMParagraphs
-from text_recognizer.paragraph_text_recognizer import ParagraphTextRecognizer
+from question_answer.text_recognizer.data import IAMParagraphs
+from question_answer.text_recognizer.paragraph_text_recognizer import ParagraphTextRecognizer
 
 
 _TEST_CHARACTER_ERROR_RATE = 0.17

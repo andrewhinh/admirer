@@ -16,7 +16,7 @@ from PIL import Image
 import torch
 
 from question_answer import util
-from text_recognizer.stems.paragraph import ParagraphStem
+from question_answer.text_recognizer.stems.paragraph import ParagraphStem
 
 
 STAGED_MODEL_DIRNAME = Path(__file__).resolve().parent / "artifacts" / "paragraph-text-recognizer"

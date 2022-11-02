@@ -1,5 +1,5 @@
 """Test for data.iam module."""
-from text_recognizer.data.iam import IAM
+from question_answer.text_recognizer.data.iam import IAM
 
 
 def test_iam_parsed_lines():

@@ -1,5 +1,5 @@
-import text_recognizer.metadata.emnist as emnist
-import text_recognizer.metadata.shared as shared
+import question_answer.text_recognizer.metadata.emnist as emnist
+import question_answer.text_recognizer.metadata.shared as shared
 
 
 PROCESSED_DATA_DIRNAME = shared.DATA_DIRNAME / "processed" / "iam_paragraphs"

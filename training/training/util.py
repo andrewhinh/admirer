@@ -2,8 +2,8 @@
 import argparse
 import importlib
 
-DATA_CLASS_MODULE = "text_recognizer.data"
-MODEL_CLASS_MODULE = "text_recognizer.models"
+DATA_CLASS_MODULE = "question_answer.text_recognizer.data"
+MODEL_CLASS_MODULE = "question_answer.text_recognizer.models"
 
 
 def import_class(module_and_class_name: str) -> type:

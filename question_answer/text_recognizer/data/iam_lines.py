@@ -8,11 +8,11 @@ import numpy as np
 from PIL import Image, ImageFile
 
 from question_answer import util
-from text_recognizer.data.base_data_module import BaseDataModule, load_and_print_info
-from text_recognizer.data.iam import IAM
-from text_recognizer.data.util import BaseDataset, convert_strings_to_labels, resize_image
-import text_recognizer.metadata.iam_lines as metadata
-from text_recognizer.stems.line import IAMLineStem
+from question_answer.text_recognizer.data.base_data_module import BaseDataModule, load_and_print_info
+from question_answer.text_recognizer.data.iam import IAM
+from question_answer.text_recognizer.data.util import BaseDataset, convert_strings_to_labels, resize_image
+import question_answer.text_recognizer.metadata.iam_lines as metadata
+from question_answer.text_recognizer.stems.line import IAMLineStem
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 

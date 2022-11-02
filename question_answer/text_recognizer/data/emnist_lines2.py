@@ -7,11 +7,11 @@ import numpy as np
 from PIL import Image
 import torch
 
-from text_recognizer.data.base_data_module import BaseDataModule, load_and_print_info
-from text_recognizer.data.emnist import EMNIST
-from text_recognizer.data.util import BaseDataset, convert_strings_to_labels
-import text_recognizer.metadata.emnist_lines2 as metadata
-from text_recognizer.stems.line import LineStem
+from question_answer.text_recognizer.data.base_data_module import BaseDataModule, load_and_print_info
+from question_answer.text_recognizer.data.emnist import EMNIST
+from question_answer.text_recognizer.data.util import BaseDataset, convert_strings_to_labels
+import question_answer.text_recognizer.metadata.emnist_lines2 as metadata
+from question_answer.text_recognizer.stems.line import LineStem
 
 
 DATA_DIRNAME = metadata.PROCESSED_DATA_DIRNAME
@@ -142,7 +142,7 @@ class EMNISTLines2(BaseDataModule):
     def _generate_data(self, split: str) -> None:
         print(f"EMNISTLines2 generating data for {split}...")
 
-        from text_recognizer.data.sentence_generator import SentenceGenerator
+        from question_answer.text_recognizer.data.sentence_generator import SentenceGenerator
 
         sentence_generator = SentenceGenerator(self.max_length - 2)  # Subtract two because we will add start/end tokens
 

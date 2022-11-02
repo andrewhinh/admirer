@@ -6,11 +6,11 @@ import h5py
 import numpy as np
 import torch
 
-from text_recognizer.data import EMNIST
-from text_recognizer.data.base_data_module import BaseDataModule, load_and_print_info
-from text_recognizer.data.util import BaseDataset
-import text_recognizer.metadata.emnist_lines as metadata
-from text_recognizer.stems.image import ImageStem
+from question_answer.text_recognizer.data import EMNIST
+from question_answer.text_recognizer.data.base_data_module import BaseDataModule, load_and_print_info
+from question_answer.text_recognizer.data.util import BaseDataset
+import question_answer.text_recognizer.metadata.emnist_lines as metadata
+from question_answer.text_recognizer.stems.image import ImageStem
 
 
 PROCESSED_DATA_DIRNAME = metadata.PROCESSED_DATA_DIRNAME
@@ -132,7 +132,7 @@ class EMNISTLines(BaseDataModule):
     def _generate_data(self, split: str) -> None:
         print(f"EMNISTLinesDataset generating data for {split}...")
 
-        from text_recognizer.data.sentence_generator import SentenceGenerator
+        from question_answer.text_recognizer.data.sentence_generator import SentenceGenerator
 
         sentence_generator = SentenceGenerator(self.max_length - 2)  # Subtract two because we will add start/end tokens
 

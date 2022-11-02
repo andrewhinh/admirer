@@ -5,7 +5,8 @@ import json
 import os
 from pathlib import Path
 import random
-from typing import Union
+from typing import Union, Optional, List, Any, Dict, Tuple
+from collections import defaultdict
 
 import numpy as np
 from onnxruntime import InferenceSession
@@ -67,7 +68,15 @@ class PICa_OKVQA:
     Question Answering Class
     """
 
-    def __init__(self, caption_info, tag_info, questions, context_idxs, question_features, image_features):
+    def __init__(
+        self, 
+        caption_info: Tuple[int, str], 
+        tag_info: Tuple[int, List[str]], 
+        questions: Dict[str, List[Dict[str, Any]]], 
+        context_idxs: Dict[str, str], 
+        question_features, 
+        image_features
+    ):
         self.tag_info = tag_info
         self.questions = questions
         # load cached image representation (Coco caption & Tags)
@@ -286,36 +295,40 @@ class PICa_OKVQA:
             caption_dict[idx] += ". " + tags_dict[idx]
         return caption_dict
 
-    def load_anno(self, coco_caption_file, answer_anno_file, question_anno_file, questions):
+    def load_anno(self, coco_caption_file: Optional[Path], answer_anno_file: Optional[Path], question_anno_file: Optional[Path], questions):
+        """Loads annotation from a caption file"""
+        
+        # Define default dictionaries
+        caption_dict, answer_dict, question_dict = defaultdict(list), defaultdict(list), defaultdict(list)
+        
+        # Create caption dictionary
         if coco_caption_file is not None:
             coco_caption = json.load(open(coco_caption_file, "r"))
             if isinstance(coco_caption, dict):
                 coco_caption = coco_caption["annotations"]
+            for sample in coco_caption:
+                caption_dict[sample["image_id"]].append(sample["caption"])
+                
+        # Create answer dictionary
         if answer_anno_file is not None:
             answer_anno = json.load(open(answer_anno_file, "r"))
+            for sample in answer_anno["annotations"]:
+                id = str(sample["image_id"]) + "<->" + str(sample["question_id"])
+                if id not in answer_dict:
+                    answer_dict[id] = [
+                        x["answer"] for x in sample["answers"]
+                    ]
+                    
+        # Create question dictionary
         if question_anno_file is not None:
             question_anno = json.load(open(question_anno_file, "r"))
         else:
             question_anno = questions
-
-        caption_dict = {}
-        if coco_caption_file is not None:
-            for sample in coco_caption:
-                if sample["image_id"] not in caption_dict:
-                    caption_dict[sample["image_id"]] = [sample["caption"]]
-                else:
-                    caption_dict[sample["image_id"]].append(sample["caption"])
-        answer_dict = {}
-        if answer_anno_file is not None:
-            for sample in answer_anno["annotations"]:
-                if str(sample["image_id"]) + "<->" + str(sample["question_id"]) not in answer_dict:
-                    answer_dict[str(sample["image_id"]) + "<->" + str(sample["question_id"])] = [
-                        x["answer"] for x in sample["answers"]
-                    ]
-        question_dict = {}
         for sample in question_anno["questions"]:
-            if str(sample["image_id"]) + "<->" + str(sample["question_id"]) not in question_dict:
-                question_dict[str(sample["image_id"]) + "<->" + str(sample["question_id"])] = sample["question"]
+            id = str(sample["image_id"]) + "<->" + str(sample["question_id"])
+            if id not in question_dict:
+                question_dict[id] = sample["question"]
+                
         return caption_dict, answer_dict, question_dict
 
     def add_anno(self, add, traincontext_caption_dict, traincontext_answer_dict, traincontext_question_dict):
@@ -406,11 +419,11 @@ class Pipeline:
         # Generating image tag(s)
         for dic in self.segment(image_pil):
             self.tags.append(dic["label"])
-        tag_info = [img_id, self.tags]
+        tag_info: Tuple[int, List[str]] = [img_id, self.tags]
 
         # Generating image caption
         caption = self.predict_caption(image_pil)
-        caption_info = [img_id, caption]
+        caption_info: Tuple[int, str] = [img_id, caption]
 
         # Generating image/question features
         inputs = self.clip_processor(text=[question_str], images=image_pil, return_tensors="np", padding=True)
@@ -420,7 +433,7 @@ class Pipeline:
         )
 
         # Generating context idxs
-        context_idxs = {"0": str(img_id) + "<->" + str(question_id)}
+        context_idxs: Dict[str, str] = {"0": str(img_id) + "<->" + str(question_id)}
 
         # Answering question
         questions = {"questions": [{"image_id": img_id, "question": question_str, "question_id": question_id}]}

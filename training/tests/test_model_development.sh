@@ -20,16 +20,16 @@ python training/run_experiment.py --data_class=IAMParagraphs --model_class=Resne
 TRAIN_RUN=$(find ./training/logs/wandb/latest-run/* | grep -Eo "run-([[:alnum:]])+\.wandb" | sed -e "s/^run-//" -e "s/\.wandb//")
 
 echo "staging trained model from run $TRAIN_RUN"
-python training/stage_model.py --entity DEFAULT --run "$TRAIN_RUN" --staged_model_name test-dummy --ckpt_alias latest --to_project "$WANDB_PROJECT" --from_project "$WANDB_PROJECT" || FAILURE=true
+python training/stage_model.py --run "$TRAIN_RUN" --staged_model_name test-dummy --ckpt_alias latest || FAILURE=true
 
 echo "fetching staged model"
-python training/stage_model.py --entity DEFAULT --fetch --from_project $WANDB_PROJECT --staged_model_name test-dummy || FAILURE=true
+python training/stage_model.py --fetch --staged_model_name test-dummy || FAILURE=true
 STAGE_RUN=$(find ./training/logs/wandb/latest-run/* | grep -Eo "run-([[:alnum:]])+\.wandb" | sed -e "s/^run-//" -e "s/\.wandb//")
 
 if [ "$FAILURE" = true ]; then
   echo "Model development test failed"
   echo "cleaning up local files"
-  rm -rf text_recognizer/artifacts/test-dummy
+  rm -rf question_answer/artifacts/test-dummy
   echo "leaving remote files in place"
   exit 1
 fi

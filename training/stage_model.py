@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 from typing import Any
 
+from dotenv import load_dotenv
 import wandb
 from wandb import Artifact
 from wandb.sdk.wandb_run import Run
@@ -20,6 +21,8 @@ DIRECTORY = Path("question_answer/")
 
 PROD_STAGING_ROOT = PROJECT_ROOT / DIRECTORY / Path("artifacts")
 PROD_PATHS = ["coco_annotations", "coco_clip_new", "transformers", "onnx"]
+
+load_dotenv()
 
 api = wandb.Api()
 DEFAULT_ENTITY = api.default_entity

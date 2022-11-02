@@ -1,12 +1,14 @@
 # Imports
 import argparse
+from collections import defaultdict
 import itertools
 import json
 import os
 from pathlib import Path
 import random
-from typing import Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
+from dotenv import load_dotenv
 import numpy as np
 from onnxruntime import InferenceSession
 import openai
@@ -23,17 +25,15 @@ from transformers import (
     ViTFeatureExtractor,
 )
 
-
 # Variables
 # Artifact path
 artifact_path = Path(__file__).resolve().parent / "artifacts"
 
 # PICa formatting/config
-img_id = 100  # Random
-question_id = 1005  # Random
-n_shot = 32
+img_id = 100  # Random idx for inference
+question_id = 1005  # Random idx for inference
+n_shot = 32  # PICa paper doesn't utilize newer model, so context can be higher
 n_ensemble = 5
-similarity_metric = "imagequestion"
 coco_path = artifact_path / "coco_annotations"
 similarity_path = artifact_path / "coco_clip_new"
 
@@ -50,11 +50,12 @@ num_beams = 4
 # Caption model config
 caption_model = transformers_path / "nlpconnect" / "vit-gpt2-image-captioning"
 engine = "text-davinci-002"
-caption_type = "vinvl_tag"
 
 # CLIP Encoders config
 clip_processor = transformers_path / "openai" / "clip-vit-base-patch16"
 clip_onnx = onnx_path / "clip.onnx"
+
+load_dotenv()
 
 
 # Helper/main classes
@@ -63,12 +64,17 @@ class PICa_OKVQA:
     Question Answering Class
     """
 
-    def __init__(self, caption_info, tag_info, questions, context_idxs, question_features, image_features):
-        self.tag_info = tag_info
-        self.questions = questions
-        # load cached image representation (Coco caption & Tags)
-        self.inputtext_dict = self.load_cachetext(caption_info)
-
+    def __init__(
+        self,
+        caption_info: Optional[Dict[Any, Any]],
+        tag_info: Optional[Dict[Any, Any]],
+        questions: Optional[Dict[str, List[Dict[str, str]]]],
+        context_idxs: Optional[Dict[str, str]],
+        question_features: Optional[np.ndarray],
+        image_features: Optional[np.ndarray],
+        evaluate: bool = False,
+    ):
+        self.evaluate = evaluate
         (
             self.traincontext_caption_dict,
             self.traincontext_answer_dict,
@@ -77,105 +83,145 @@ class PICa_OKVQA:
             "%s/captions_train2014.json" % coco_path,
             "%s/mscoco_train2014_annotations.json" % coco_path,
             "%s/OpenEnded_mscoco_train2014_questions.json" % coco_path,
-            None,
         )
-        (
-            self.traincontext_caption_dict,
-            self.traincontext_answer_dict,
-            self.traincontext_question_dict,
-        ) = self.add_anno(
-            "%s/admirer-pica.json" % coco_path,
-            self.traincontext_caption_dict,
-            self.traincontext_answer_dict,
-            self.traincontext_question_dict,
-        )
+        if evaluate:
+            (
+                self.testcontext_caption_dict,
+                self.testcontext_tags_dict,
+                self.testcontext_answer_dict,
+                self.testcontext_question_dict,
+            ) = self.add_anno(
+                "%s/admirer-pica.json" % coco_path,
+                evaluate=evaluate,
+            )
+            # load cached image representation (Coco caption & Tags)
+            self.inputtext_dict = self.load_cachetext(self.testcontext_caption_dict, self.testcontext_tags_dict)
+            context_idxs = self.load_similarity(evaluate=evaluate)
+            self.remove_duplicates_in_train(context_idxs)
+            question_dict_keys = list(self.testcontext_question_dict.keys())
+            image_ids, question_ids = [key.split("<->")[0] for key in question_dict_keys], [
+                key.split("<->")[1] for key in question_dict_keys
+            ]
+            list_questions = list(self.testcontext_question_dict.values())
+            self.questions = {
+                "questions": [
+                    {"image_id": image_id, "question": question_str, "question_id": question_id}
+                    for image_id, question_str, quest_id in zip(image_ids, list_questions, question_ids)
+                ]
+            }
+        else:
+            (
+                self.traincontext_caption_dict,
+                self.traincontext_answer_dict,
+                self.traincontext_question_dict,
+                _,
+            ) = self.add_anno(
+                "%s/admirer-pica.json" % coco_path,
+                self.traincontext_caption_dict,
+                self.traincontext_answer_dict,
+                self.traincontext_question_dict,
+            )
+            # load cached image representation (Coco caption & Tags)
+            self.inputtext_dict = self.load_cachetext(caption_info, tag_info)
+            _ = self.load_similarity(context_idxs, question_features, image_features)
+            self.questions = questions
+
         self.train_keys = list(self.traincontext_answer_dict.keys())
-        self.load_similarity(context_idxs, question_features, image_features)
 
     def answer_gen(self):
-        _, _, question_dict = self.load_anno(None, None, None, self.questions)
+        _, _, question_dict = self.load_anno(questions=self.questions)
 
-        key = list(question_dict.keys())[0]
-        img_key = int(key.split("<->")[0])
-        question, caption = (
-            question_dict[key],
-            self.inputtext_dict[img_key],
-        )
+        if self.evaluate:
+            counter = 0
 
-        caption_i = caption[
-            random.randint(0, len(caption) - 1)
-        ]  # select one caption if exists multiple, not true except COCO GT (5)
+        keys = list(question_dict.keys())
+        for key in keys:
+            img_key = int(key.split("<->")[0])
+            question, caption = (
+                question_dict[key],
+                self.inputtext_dict[img_key],
+            )
+            caption_i = caption[
+                random.randint(0, len(caption) - 1)
+            ]  # select one caption if exists multiple, not true except COCO GT (5)
 
-        pred_answer_list, pred_prob_list = [], []
-        context_key_list = self.get_context_keys(
-            key,
-            similarity_metric,
-            n_shot * n_ensemble,
-        )
+            pred_answer_list, pred_prob_list = [], []
+            context_key_list = self.get_context_keys(
+                key,
+                n_shot * n_ensemble,
+            )
 
-        for repeat in range(n_ensemble):
-            # prompt format following GPT-3 QA API
-            prompt = "Please answer the question according to the above context.\n===\n"
-            for ni in range(n_shot):
-                if context_key_list is None:
-                    context_key = self.train_keys[random.randint(0, len(self.train_keys) - 1)]
-                else:
-                    context_key = context_key_list[ni + n_shot * repeat]
-                img_context_key = int(context_key.split("<->")[0])
-                while True:  # make sure get context with valid question and answer
-                    if (
-                        len(self.traincontext_question_dict[context_key]) != 0
-                        and len(self.traincontext_answer_dict[context_key][0]) != 0
-                    ):
+            for repeat in range(n_ensemble):
+                # prompt format following GPT-3 QA API
+                prompt = "Please answer the question according to the above context.\n===\n"
+                for ni in range(n_shot):
+                    if context_key_list is None:
+                        context_key = self.train_keys[random.randint(0, len(self.train_keys) - 1)]
+                    else:
+                        context_key = context_key_list[ni + n_shot * repeat]
+                    img_context_key = int(context_key.split("<->")[0])
+                    while True:  # make sure get context with valid question and answer
+                        if (
+                            len(self.traincontext_question_dict[context_key]) != 0
+                            and len(self.traincontext_answer_dict[context_key][0]) != 0
+                        ):
+                            break
+                        context_key = self.train_keys[random.randint(0, len(self.train_keys) - 1)]
+                    prompt += (
+                        "Context: %s\n===\n"
+                        % self.traincontext_caption_dict[img_context_key][
+                            random.randint(
+                                0,
+                                len(self.traincontext_caption_dict[img_context_key]) - 1,
+                            )
+                        ]
+                    )
+                    prompt += "Q: %s\nA: %s\n\n===\n" % (
+                        self.traincontext_question_dict[context_key],
+                        self.traincontext_answer_dict[context_key][0],
+                    )
+                prompt += "Context: %s\n===\n" % caption_i
+                prompt += "Q: %s\nA:" % question
+                response = None
+                try:
+                    response = openai.Completion.create(
+                        engine=engine,
+                        prompt=prompt,
+                        max_tokens=5,
+                        logprobs=1,
+                        temperature=0.0,
+                        stream=False,
+                        stop=["\n", "<|endoftext|>"],
+                    )
+                except Exception as e:
+                    print(e)
+                    exit(0)
+
+                plist = []
+                for ii in range(len(response["choices"][0]["logprobs"]["tokens"])):
+                    if response["choices"][0]["logprobs"]["tokens"][ii] == "\n":
                         break
-                    context_key = self.train_keys[random.randint(0, len(self.train_keys) - 1)]
-                prompt += (
-                    "Context: %s\n===\n"
-                    % self.traincontext_caption_dict[img_context_key][
-                        random.randint(
-                            0,
-                            len(self.traincontext_caption_dict[img_context_key]) - 1,
-                        )
-                    ]
-                )
-                prompt += "Q: %s\nA: %s\n\n===\n" % (
-                    self.traincontext_question_dict[context_key],
-                    self.traincontext_answer_dict[context_key][0],
-                )
-            prompt += "Context: %s\n===\n" % caption_i
-            prompt += "Q: %s\nA:" % question
-            response = None
-            try:
-                response = openai.Completion.create(
-                    engine=engine,
-                    prompt=prompt,
-                    max_tokens=5,
-                    logprobs=1,
-                    temperature=0.0,
-                    stream=False,
-                    stop=["\n", "<|endoftext|>"],
-                )
-            except Exception as e:
-                print(e)
-                exit(0)
+                    plist.append(response["choices"][0]["logprobs"]["token_logprobs"][ii])
+                pred_answer_list.append(self.process_answer(response["choices"][0]["text"]))
+                pred_prob_list.append(sum(plist))
+            maxval = -999.0
+            for ii in range(len(pred_prob_list)):
+                if pred_prob_list[ii] > maxval:
+                    maxval, pred_answer = pred_prob_list[ii], pred_answer_list[ii]
+            if not pred_answer or pred_answer == " ":
+                pred_answer = "?"
 
-            plist = []
-            for ii in range(len(response["choices"][0]["logprobs"]["tokens"])):
-                if response["choices"][0]["logprobs"]["tokens"][ii] == "\n":
-                    break
-                plist.append(response["choices"][0]["logprobs"]["token_logprobs"][ii])
-            pred_answer_list.append(self.process_answer(response["choices"][0]["text"]))
-            pred_prob_list.append(sum(plist))
-        maxval = -999.0
-        for ii in range(len(pred_prob_list)):
-            if pred_prob_list[ii] > maxval:
-                maxval, pred_answer = pred_prob_list[ii], pred_answer_list[ii]
-        if not pred_answer or pred_answer == " ":
-            pred_answer = "?"
-        return pred_answer
+            if self.evaluate:
+                answer = self.testcontext_answer_dict[key]
+                if pred_answer == answer:
+                    counter += 1
+            else:
+                return pred_answer
+
+        return counter / len(keys)
 
     def rationale(self, answer):
-        _, _, question_dict = self.load_anno(None, None, None, self.questions)
+        _, _, question_dict = self.load_anno(questions=self.questions)
 
         key = list(question_dict.keys())[0]
         img_key = int(key.split("<->")[0])
@@ -220,105 +266,160 @@ class PICa_OKVQA:
                 maxval, pred_answer = pred_prob_list[ii], pred_answer_list[ii]
         return pred_answer
 
-    def get_context_keys(self, key, metric, n):
-        if metric == "question":
-            lineid = self.valkey2idx[key]
-            similarity = np.matmul(self.train_feature, self.val_feature[lineid, :])
-            index = similarity.argsort()[-n:][::-1]
-            return [self.train_idx[str(x)] for x in index]
-        elif metric == "imagequestion":
-            # combined with Q-similairty (image+question)
-            lineid = self.valkey2idx[key]
-            question_similarity = np.matmul(self.train_feature, self.val_feature[lineid, :])
-            # end of Q-similairty
-            similarity = question_similarity + np.matmul(self.image_train_feature, self.image_val_feature[lineid, :])
-            index = similarity.argsort()[-n:][::-1]
-            return [self.train_idx[str(x)] for x in index]
-        else:
-            return None
+    def get_context_keys(self, key: str, n: int) -> List[str]:
+        """Get context keys based on similarity scores"""
+        # combined with Q-similairty (image+question)
+        lineid = self.valkey2idx[key]
 
-    def load_similarity(self, context_idxs, question_features, image_features):
-        val_idx = context_idxs
-        self.valkey2idx = {}
-        for ii in val_idx:
-            self.valkey2idx[val_idx[ii]] = int(ii)
-        if similarity_metric == "question":
-            self.train_feature = np.load("%s/coco_clip_vitb16_train2014_okvqa_question.npy" % similarity_path)
+        # Sanity checking train similarity arrays
+        temp_train_feature = None
+        temp_image_train_feature = None
+        for encoded_question_idx in range(len(self.train_feature)):
+            if self.val_feature[lineid, :] == self.train_feature[encoded_question_idx]:
+                mask = np.ones(len(self.train_feature), dtype=bool)
+                mask[[encoded_question_idx]] = False
+                temp_train_feature = self.train_feature[mask, ...]
+        for encoded_image_idx in range(len(self.image_train_feature)):
+            if self.val_feature[lineid, :] == self.image_train_feature[encoded_image_idx]:
+                mask = np.ones(len(self.image_train_feature), dtype=bool)
+                mask[[encoded_image_idx]] = False
+                temp_image_train_feature = self.image_train_feature[mask, ...]
+        if temp_train_feature and temp_image_train_feature:
+            question_similarity: np.ndarray = np.matmul(temp_train_feature, self.val_feature[lineid, :])
+            # end of Q-similairty
+            similarity: np.ndarray = question_similarity + np.matmul(
+                temp_image_train_feature, self.image_val_feature[lineid, :]
+            )
+        else:
+            question_similarity: np.ndarray = np.matmul(self.train_feature, self.val_feature[lineid, :])
+            # end of Q-similairty
+            similarity: np.ndarray = question_similarity + np.matmul(
+                self.image_train_feature, self.image_val_feature[lineid, :]
+            )
+
+        index: np.ndarray = similarity.argsort()[-n:][::-1]
+        return [self.train_idx[str(x)] for x in index]
+
+    def load_similarity(
+        self,
+        context_idxs: Optional[Dict[str, str]],
+        question_features: Optional[np.ndarray],
+        image_features: Optional[np.ndarray],
+        evaluate=False,
+    ):
+        # Add question train feature, image train feature, and train idx
+        self.train_feature = np.load("%s/coco_clip_vitb16_train2014_okvqa_question.npy" % similarity_path)
+        self.train_idx: Dict[str, str] = json.load(
+            open(
+                "%s/okvqa_qa_line2sample_idx_train2014.json" % similarity_path,
+                "r",
+            )
+        )
+        self.image_train_feature = np.load(
+            "%s/coco_clip_vitb16_train2014_okvqa_convertedidx_image.npy" % similarity_path
+        )
+
+        if evaluate:
+            context_idxs = dict(list(self.train_idx.items())[9009:])
+            new_keys = [str(idx) for idx in range(len(context_idxs))]
+            context_idxs = dict(zip(new_keys, list(context_idxs.values())))
+            self.val_feature = self.train_feature[-1236:, :]
+            self.image_val_feature = self.image_train_feature[-1236:, :]
+        else:
             self.val_feature = question_features
-            self.train_idx = json.load(
-                open(
-                    "%s/okvqa_qa_line2sample_idx_train2014.json" % similarity_path,
-                    "r",
-                )
-            )
-        elif similarity_metric == "imagequestion":
-            self.train_feature = np.load("%s/coco_clip_vitb16_train2014_okvqa_question.npy" % similarity_path)
-            self.val_feature = question_features
-            self.train_idx = json.load(
-                open(
-                    "%s/okvqa_qa_line2sample_idx_train2014.json" % similarity_path,
-                    "r",
-                )
-            )
-            self.image_train_feature = np.load(
-                "%s/coco_clip_vitb16_train2014_okvqa_convertedidx_image.npy" % similarity_path
-            )
             self.image_val_feature = image_features
 
-    def load_tags(self):
+        val_idx = context_idxs
+        self.valkey2idx: Dict[str, int] = {}
+        for ii in val_idx:
+            self.valkey2idx[val_idx[ii]] = int(ii)
+        return val_idx
+
+    def load_tags(
+        self,
+        tag_info: Dict(Any, List[str]),
+    ) -> Dict[int, str]:
+        """Loads tags for an image"""
         tags_dict = {}
-        image_id, tags = self.tag_info[0], self.tag_info[1]
-        tag_str = ", ".join([x for x in tags])
-        tags_dict[image_id] = tag_str
+        image_ids, list_tags = list(tag_info.keys()), list(tag_info.values())
+        # Concatenate tags into one string
+        list_str_tags = [", ".join([x for x in tags]) for tags in list_tags]
+        for id in range(len(image_ids)):
+            tags_dict[image_ids[id]] = list_str_tags[id]
         return tags_dict
 
-    def load_cachetext(self, caption_info):
-        if "tag" in caption_type:
-            tags_dict = self.load_tags()
-        idx = caption_info[0]
-        caption = caption_info[1]
-        caption_dict = {idx: caption}
-        if caption_type == "vinvl_tag":
-            caption_dict[idx] += ". " + tags_dict[idx]
+    def load_cachetext(
+        self,
+        caption_info: Dict(Any, List[str]),
+        tag_info: Dict(Any, List[str]),
+    ):
+        """Loads and adds cachetect to the caption"""
+        tags_dict = self.load_tags(tag_info)
+        caption_dict = {}
+        image_ids, captions = list(caption_info.keys()), list(caption_info.values())
+        for id in range(len(image_ids)):
+            caption_dict[image_ids[id]] = captions[id] + ". " + tags_dict[id]
         return caption_dict
 
-    def load_anno(self, coco_caption_file, answer_anno_file, question_anno_file, questions):
+    def load_anno(
+        self,
+        coco_caption_file: Optional[Path],
+        answer_anno_file: Optional[Path],
+        question_anno_file: Optional[Path],
+        questions: Optional[Dict[str, List[Dict[str, str]]]],
+    ) -> Tuple[Dict[int, List[str]], Dict[str, List[str]], Dict[str, str]]:
+        """Loads annotation from a caption file"""
+        # Define default dictionaries
+        caption_dict: defaultdict[int, List[str]] = defaultdict(list)
+        answer_dict: defaultdict[str, List[str]] = defaultdict(list)
+        question_dict: defaultdict[str, str] = defaultdict(list)
+
+        # Create caption dictionary
         if coco_caption_file is not None:
             coco_caption = json.load(open(coco_caption_file, "r"))
             if isinstance(coco_caption, dict):
-                coco_caption = coco_caption["annotations"]
-        if answer_anno_file is not None:
-            answer_anno = json.load(open(answer_anno_file, "r"))
-        if question_anno_file is not None:
-            question_anno = json.load(open(question_anno_file, "r"))
-        else:
-            question_anno = questions
-
-        caption_dict = {}
-        if coco_caption_file is not None:
+                coco_caption: List[Dict[str, Union[str, int]]] = coco_caption["annotations"]
             for sample in coco_caption:
-                if sample["image_id"] not in caption_dict:
-                    caption_dict[sample["image_id"]] = [sample["caption"]]
-                else:
-                    caption_dict[sample["image_id"]].append(sample["caption"])
-        answer_dict = {}
-        if answer_anno_file is not None:
-            for sample in answer_anno["annotations"]:
-                if str(sample["image_id"]) + "<->" + str(sample["question_id"]) not in answer_dict:
-                    answer_dict[str(sample["image_id"]) + "<->" + str(sample["question_id"])] = [
-                        x["answer"] for x in sample["answers"]
-                    ]
-        question_dict = {}
-        for sample in question_anno["questions"]:
-            if str(sample["image_id"]) + "<->" + str(sample["question_id"]) not in question_dict:
-                question_dict[str(sample["image_id"]) + "<->" + str(sample["question_id"])] = sample["question"]
-        return caption_dict, answer_dict, question_dict
+                caption_dict[sample["image_id"]].append(sample["caption"])  # int -> sample[image_id]
 
-    def add_anno(self, add, traincontext_caption_dict, traincontext_answer_dict, traincontext_question_dict):
-        if add is not None:
-            add_dict = json.load(open(add, "r"))
+        # Create answer dictionary
+        if answer_anno_file is not None:
+            answer_data = json.load(open(answer_anno_file, "r"))
+            answer_annotations: List[Dict[str, Any]] = answer_data["annotations"]
+            for sample in answer_annotations:
+                id = str(sample["image_id"]) + "<->" + str(sample["question_id"])
+                if id not in answer_dict:
+                    answer_dict[id] = [x["answer"] for x in sample["answers"]]
+
+        # Create question dictionary
+        if question_anno_file is not None:
+            question_data = json.load(open(question_anno_file, "r"))
+        else:
+            question_data = questions
+
+        question_annotations: List[Dict[str, Union[str, int]]] = question_data["questions"]
+        for sample in question_annotations:
+            id = str(sample["image_id"]) + "<->" + str(sample["question_id"])
+            if id not in question_dict:
+                question_dict[id] = sample["question"]
+
+        return dict(caption_dict), dict(answer_dict), dict(question_dict)
+
+    def add_anno(
+        self,
+        add: Path,
+        context_caption_dict: Optional[Dict[int, List[str]]],
+        context_answer_dict=Optional[Dict[str, List[str]]],
+        context_question_dict=Optional[Dict[str, str]],
+        evaluate=False,
+    ):
+        """Add extra annotations to the annotations dictionaries"""
+        add_dict = json.load(open(add, "r"))
+
+        context_tag_dict = {}
 
         caption_add = dict(zip(list(add_dict["image_id"].values()), list(add_dict["caption"].values())))
+        tags_add = dict(zip(list(add_dict["image_id"].values()), list(add_dict["tags"].values())))
         combine_ids = [
             str(image_id) + "<->" + str(question_id)
             for image_id, question_id in zip(
@@ -328,13 +429,38 @@ class PICa_OKVQA:
         answer_add = dict(zip(combine_ids, list(add_dict["answer"].values())))
         question_add = dict(zip(combine_ids, list(add_dict["question"].values())))
 
-        traincontext_caption_dict.update(caption_add)
-        traincontext_answer_dict.update(answer_add)
-        traincontext_question_dict.update(question_add)
+        if evaluate:
+            context_caption_dict = {}
+            context_answer_dict = {}
+            context_question_dict = {}
+        context_caption_dict.update(caption_add)
+        context_tag_dict.update(tags_add)
+        context_answer_dict.update(answer_add)
+        context_question_dict.update(question_add)
 
-        return traincontext_caption_dict, traincontext_answer_dict, traincontext_question_dict
+        if evaluate:
+            context_caption_dict = dict(list(context_caption_dict.items())[-36:])
+            context_tag_dict = dict(list(context_tag_dict.items())[-36:])
+            context_answer_dict = dict(list(context_answer_dict.items())[-36:])
+            context_question_dict = dict(list(context_question_dict.items())[-36:])
+
+        return context_caption_dict, context_answer_dict, context_question_dict, context_tag_dict
+
+    def remove_duplicates_in_train(self, val_idx: Dict[str, str]):
+        """Removes val idxs from self.train_idx if evaluating"""
+        self.train_idx.update(val_idx)
+        idx = 0
+        num_keys = self.train_idx.keys()
+        while idx < len(num_keys):
+            key_to_check = self.train_idx[str(idx)]
+            if sum(map((key_to_check).__eq__, self.train_idx.values())) > 1:
+                self.train_idx = {key: val for key, val in self.train_idx.items() if val != key_to_check}
+            else:
+                idx += 1
+            num_keys = self.train_idx.keys()
 
     def process_answer(self, answer):
+        """Processes answer by removing unwanted characters and words"""
         answer = answer.replace(".", "").replace(",", "").lower()
         to_be_removed = {"a", "an", "the", "to", ""}
         answer_list = answer.split(" ")
@@ -373,7 +499,7 @@ class Pipeline:
         self.clip_processor = CLIPProcessor.from_pretrained(clip_processor)
 
         # PICa Setup
-        openai.api_key_path = Path(__file__).resolve().parent / "key.txt"
+        openai.api_key = os.getenv("OPENAI_API_KEY")
 
     def predict_caption(self, image):
         pixel_values = self.caption_feature_extractor(images=[image], return_tensors="pt").pixel_values
@@ -402,11 +528,11 @@ class Pipeline:
         # Generating image tag(s)
         for dic in self.segment(image_pil):
             self.tags.append(dic["label"])
-        tag_info = [img_id, self.tags]
+        tag_info: Dict[int, List[str]] = {img_id: self.tags}
 
         # Generating image caption
         caption = self.predict_caption(image_pil)
-        caption_info = [img_id, caption]
+        caption_info: Dict[int, str] = {img_id: caption}
 
         # Generating image/question features
         inputs = self.clip_processor(text=[question_str], images=image_pil, return_tensors="np", padding=True)
@@ -416,7 +542,7 @@ class Pipeline:
         )
 
         # Generating context idxs
-        context_idxs = {"0": str(img_id) + "<->" + str(question_id)}
+        context_idxs: Dict[str, str] = {"0": str(img_id) + "<->" + str(question_id)}
 
         # Answering question
         questions = {"questions": [{"image_id": img_id, "question": question_str, "question_id": question_id}]}
@@ -427,6 +553,13 @@ class Pipeline:
         # rationale = okvqa.rationale(answer)
 
         return answer  # + " because " + rationale
+
+    def evaluate(self):
+        okvqa = PICa_OKVQA(
+            evaluate=True,
+        )
+        acc = okvqa.answer_gen()
+        return acc
 
 
 # Running model

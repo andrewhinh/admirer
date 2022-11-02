@@ -351,7 +351,8 @@ class PICa_OKVQA:
 
         return traincontext_caption_dict, traincontext_answer_dict, traincontext_question_dict
 
-    def process_answer(self, answer):
+    def process_answer(self, answer: str) -> str:
+        """Processes answer by removing unwanted characters and words"""
         answer = answer.replace(".", "").replace(",", "").lower()
         to_be_removed = {"a", "an", "the", "to", ""}
         answer_list = answer.split(" ")

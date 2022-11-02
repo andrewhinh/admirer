@@ -35,6 +35,7 @@ img_id = 100  # Random
 question_id = 1005  # Random
 n_shot = 32
 n_ensemble = 5
+similarity_metrics = ["question", "imagequestion"]
 similarity_metric = "imagequestion"
 coco_path = artifact_path / "coco_annotations"
 similarity_path = artifact_path / "coco_clip_new"
@@ -250,46 +251,50 @@ class PICa_OKVQA:
         else:
             return None
 
-    def load_similarity(self, context_idxs, question_features, image_features):
-        val_idx = context_idxs
+    def load_similarity(self, context_idxs: Dict[str, str], question_features, image_features):
         self.valkey2idx = {}
-        for ii in val_idx:
-            self.valkey2idx[val_idx[ii]] = int(ii)
-        if similarity_metric == "question":
-            self.train_feature = np.load("%s/coco_clip_vitb16_train2014_okvqa_question.npy" % similarity_path)
-            self.val_feature = question_features
-            self.train_idx = json.load(
-                open(
-                    "%s/okvqa_qa_line2sample_idx_train2014.json" % similarity_path,
-                    "r",
-                )
+        for idx in context_idxs:
+            self.valkey2idx[context_idxs[idx]] = int(idx)
+        
+        # Raise exception if the metric is not valid
+        if similarity_metric not in similarity_metrics:
+            raise ValueError("Invalid similarity metric")
+        
+        # Add train feature, val feature and train idx for all valid metrics
+        self.train_feature = np.load("%s/coco_clip_vitb16_train2014_okvqa_question.npy" % similarity_path)
+        self.val_feature = question_features
+        self.train_idx = json.load(
+            open(
+                "%s/okvqa_qa_line2sample_idx_train2014.json" % similarity_path,
+                "r",
             )
-        elif similarity_metric == "imagequestion":
-            self.train_feature = np.load("%s/coco_clip_vitb16_train2014_okvqa_question.npy" % similarity_path)
-            self.val_feature = question_features
-            self.train_idx = json.load(
-                open(
-                    "%s/okvqa_qa_line2sample_idx_train2014.json" % similarity_path,
-                    "r",
-                )
-            )
+        )
+        
+        # Add image features for image questions
+        if similarity_metric == "imagequestion":
             self.image_train_feature = np.load(
                 "%s/coco_clip_vitb16_train2014_okvqa_convertedidx_image.npy" % similarity_path
             )
             self.image_val_feature = image_features
 
+            
+
     def load_tags(self):
+        """Loads tags for an image"""
         tags_dict = {}
-        image_id, tags = self.tag_info[0], self.tag_info[1]
+        image_id, tags = self.tag_info
+        
+        # Concatenate tags into a single string
         tag_str = ", ".join([x for x in tags])
+        
         tags_dict[image_id] = tag_str
         return tags_dict
 
-    def load_cachetext(self, caption_info):
-        if "tag" in caption_type:
+    def load_cachetext(self, caption_info: Tuple[int, str]):
+        """Loads and adds cachetect to the caption"""
+        if "tag" in caption_type: 
             tags_dict = self.load_tags()
-        idx = caption_info[0]
-        caption = caption_info[1]
+        idx, caption = caption_info
         caption_dict = {idx: caption}
         if caption_type == "vinvl_tag":
             caption_dict[idx] += ". " + tags_dict[idx]

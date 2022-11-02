@@ -106,6 +106,7 @@ class PICa_OKVQA:
         self.train_keys = list(self.traincontext_answer_dict.keys())
         self.load_similarity(context_idxs, question_features, image_features)
 
+
     def answer_gen(self):
         _, _, question_dict = self.load_anno(None, None, None, self.questions)
 
@@ -188,6 +189,7 @@ class PICa_OKVQA:
             pred_answer = "?"
         return pred_answer
 
+
     def rationale(self, answer):
         _, _, question_dict = self.load_anno(None, None, None, self.questions)
 
@@ -234,25 +236,25 @@ class PICa_OKVQA:
                 maxval, pred_answer = pred_prob_list[ii], pred_answer_list[ii]
         return pred_answer
 
-    def get_context_keys(self, key, metric, n):
-        if metric == "question":
-            lineid = self.valkey2idx[key]
-            similarity = np.matmul(self.train_feature, self.val_feature[lineid, :])
-            index = similarity.argsort()[-n:][::-1]
-            return [self.train_idx[str(x)] for x in index]
-        elif metric == "imagequestion":
-            # combined with Q-similairty (image+question)
-            lineid = self.valkey2idx[key]
-            question_similarity = np.matmul(self.train_feature, self.val_feature[lineid, :])
-            # end of Q-similairty
-            similarity = question_similarity + np.matmul(self.image_train_feature, self.image_val_feature[lineid, :])
-            index = similarity.argsort()[-n:][::-1]
-            return [self.train_idx[str(x)] for x in index]
-        else:
-            return None
+
+    def get_context_keys(self, key: str, metric: str, n: int):
+        """Get context keys based on similarity scores"""
+        # Throw error with an invalid metric
+        if metric not in similarity_metrics:
+            raise ValueError("Invalid similarity metric")
+        
+        lineid = self.valkey2idx[key]
+        similarity: np.ndarray = np.matmul(self.train_feature, self.val_feature[lineid, :])
+        
+        if metric == "imagequestion":
+            similarity = similarity + np.matmul(self.image_train_feature, self.image_val_feature[lineid, :])
+        
+        index: np.ndarray = similarity.argsort()[-n:][::-1] # Get n indices with highest similarity scores
+        return [self.train_idx[str(x)] for x in index]
+
 
     def load_similarity(self, context_idxs: Dict[str, str], question_features, image_features):
-        self.valkey2idx = {}
+        self.valkey2idx: Dict[str, int] = {}
         for idx in context_idxs:
             self.valkey2idx[context_idxs[idx]] = int(idx)
         
@@ -277,7 +279,6 @@ class PICa_OKVQA:
             )
             self.image_val_feature = image_features
 
-            
 
     def load_tags(self):
         """Loads tags for an image"""
@@ -290,6 +291,7 @@ class PICa_OKVQA:
         tags_dict[image_id] = tag_str
         return tags_dict
 
+
     def load_cachetext(self, caption_info: Tuple[int, str]):
         """Loads and adds cachetect to the caption"""
         if "tag" in caption_type: 
@@ -299,6 +301,7 @@ class PICa_OKVQA:
         if caption_type == "vinvl_tag":
             caption_dict[idx] += ". " + tags_dict[idx]
         return caption_dict
+
 
     def load_anno(self, coco_caption_file: Optional[Path], answer_anno_file: Optional[Path], question_anno_file: Optional[Path], questions):
         """Loads annotation from a caption file"""
@@ -336,6 +339,7 @@ class PICa_OKVQA:
                 
         return dict(caption_dict), dict(answer_dict), dict(question_dict)
 
+
     def add_anno(
         self, 
         add: Optional[Path], 
@@ -362,6 +366,7 @@ class PICa_OKVQA:
         traincontext_question_dict.update(question_add)
 
         return traincontext_caption_dict, traincontext_answer_dict, traincontext_question_dict
+
 
     def process_answer(self, answer: str) -> str:
         """Processes answer by removing unwanted characters and words"""

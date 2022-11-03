@@ -39,6 +39,7 @@ certifi==2021.10.8
     #   httpcore
     #   httpx
     #   requests
+    #   sentry-sdk
 cffi==1.15.0
     # via
     #   bcrypt
@@ -49,13 +50,17 @@ charset-normalizer==2.0.12
     #   aiohttp
     #   requests
 click==8.1.2
-    # via uvicorn
+    # via
+    #   uvicorn
+    #   wandb
 coloredlogs==15.0.1
     # via onnxruntime
 cryptography==37.0.2
     # via paramiko
 cycler==0.11.0
     # via matplotlib
+docker-pycreds==0.4.0
+    # via wandb
 et-xmlfile==1.1.0
     # via openpyxl
 fastapi==0.78.0
@@ -76,6 +81,10 @@ frozenlist==1.3.0
     #   aiosignal
 fsspec==2022.5.0
     # via gradio
+gitdb==4.0.9
+    # via gitpython
+gitpython==3.1.29
+    # via wandb
 gradio==3.0.21
     # via -r requirements/prod.in
 h11==0.12.0
@@ -179,14 +188,22 @@ pandas-stubs==1.2.0.62
     # via openai
 paramiko==2.11.0
     # via gradio
+pathtools==0.1.2
+    # via wandb
 pillow==7.1.2
     # via
     #   -r requirements/prod.in
     #   gradio
     #   matplotlib
     #   torchvision
+promise==2.3
+    # via wandb
 protobuf==3.20.3
-    # via onnxruntime
+    # via
+    #   onnxruntime
+    #   wandb
+psutil==5.9.3
+    # via wandb
 pycparser==2.21
     # via cffi
 pycryptodome==3.14.1
@@ -211,6 +228,7 @@ python-dateutil==2.8.2
     #   botocore
     #   matplotlib
     #   pandas
+    #   wandb
 python-dotenv==0.21.0
     # via -r requirements/prod.in
 python-multipart==0.0.5
@@ -223,6 +241,7 @@ pyyaml==5.4.1
     #   pyngrok
     #   timm
     #   transformers
+    #   wandb
 regex==2022.9.13
     # via transformers
 requests==2.27.1
@@ -234,19 +253,31 @@ requests==2.27.1
     #   openai
     #   torchvision
     #   transformers
+    #   wandb
 rfc3986[idna2008]==1.5.0
     # via httpx
 s3transfer==0.6.0
     # via boto3
+sentry-sdk==1.10.1
+    # via wandb
+setproctitle==1.3.2
+    # via wandb
+shortuuid==1.0.9
+    # via wandb
 six==1.16.0
     # via
     #   analytics-python
+    #   docker-pycreds
     #   mkl-service
     #   paramiko
+    #   promise
     #   python-dateutil
     #   python-multipart
+    #   wandb
 smart-open[s3]==5.2.1
     # via -r requirements/prod.in
+smmap==5.0.0
+    # via gitdb
 sniffio==1.2.0
     # via
     #   anyio
@@ -285,6 +316,7 @@ typing-extensions==4.1.1
     #   anyio
     #   asgiref
     #   async-timeout
+    #   gitpython
     #   huggingface-hub
     #   importlib-metadata
     #   kiwisolver
@@ -303,9 +335,15 @@ urllib3==1.26.12
     # via
     #   botocore
     #   requests
+    #   sentry-sdk
 uvicorn==0.17.6
     # via gradio
+wandb==0.12.17
+    # via -r requirements/prod.in
 yarl==1.7.2
     # via aiohttp
 zipp==3.8.0
     # via importlib-metadata
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools

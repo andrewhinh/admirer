@@ -23,25 +23,12 @@ import wandb
 
 api = wandb.Api()
 
-DEFAULT_PROJECT = "fsdl-text-recognizer-2021-training"
+DEFAULT_PROJECT = "admirer"
 DEFAULT_ENTITY = api.default_entity
 
 
 def _setup_parser():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--entity",
-        type=str,
-        default=None,
-        help="The entity from which to remove artifacts. Provide the value DEFAULT"
-        + f"to use the default WANDB_ENTITY, which is currently {DEFAULT_ENTITY}.",
-    )
-    parser.add_argument(
-        "--project",
-        type=str,
-        default=DEFAULT_PROJECT,
-        help=f"The project from which to remove artifacts. Default is {DEFAULT_PROJECT}",
-    )
     parser.add_argument(
         "--run_ids",
         type=str,
@@ -85,8 +72,7 @@ def _setup_parser():
 
 
 def main(args):
-    entity = _get_entity_from(args)
-    project_path = f"{entity}/{args.project}"
+    project_path = f"{DEFAULT_ENTITY}/{DEFAULT_PROJECT}"
 
     runs = _get_runs(project_path, args.run_ids, args.run_name_res, verbose=args.verbose)
     artifact_selector = _get_selector_from(args)
@@ -168,21 +154,6 @@ def _get_selector_from(args, verbose=False):
     if verbose:
         print("removing no artifacts matching runs")
     return lambda _: False
-
-
-def _get_entity_from(args, verbose=False):
-    entity = args.entity
-    if entity is None:
-        raise RuntimeError(f"No entity argument provided. Use --entity=DEFAULT to use {DEFAULT_ENTITY}.")
-    elif entity == "DEFAULT":
-        entity = DEFAULT_ENTITY
-        if verbose:
-            print(f"using default entity {entity}")
-    else:
-        if verbose:
-            print(f"using entity {entity}")
-
-    return entity
 
 
 if __name__ == "__main__":

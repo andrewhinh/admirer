@@ -25,7 +25,7 @@ from transformers import (
 
 # Variables
 # Artifact path
-artifact_path = Path(__file__).resolve().parent / "artifacts"
+artifact_path = Path(__file__).resolve().parent / "artifacts" / "answer"
 
 # PICa formatting/config
 img_id = 100  # Random idx for inference

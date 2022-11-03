@@ -35,8 +35,7 @@ if [ "$FAILURE" = true ]; then
 fi
 echo "cleaning up local and remote files"
 rm -rf text_recognizer/artifacts/test-dummy
-python training/cleanup_artifacts.py --entity DEFAULT --project "$WANDB_PROJECT" \
-  --run_ids "$TRAIN_RUN" "$STAGE_RUN" --all -v
+python training/cleanup_artifacts.py --run_ids "$TRAIN_RUN" "$STAGE_RUN" --all -v
 # note: if $TRAIN_RUN and $STAGE_RUN are not set, this will fail.
 #  that's good because it avoids all artifacts from the project being deleted due to the --all.
 echo "Model development test passed"

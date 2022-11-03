@@ -42,7 +42,7 @@ per-file-ignores =
   *app_gradio/app.py:I202
 
   # Extra
-  *question_answer/text_recognizer/*:I100,I202,I201,DAR101,F401,DAR201
+  *question_answer/*:I100,I202,I201,DAR101,F401,DAR201,DAR002
   *training/run_experiment.py:I100,I202
   *question_answer/answer.py:C901
   *load_test/locust_http_user.py:F841

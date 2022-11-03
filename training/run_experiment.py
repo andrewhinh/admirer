@@ -8,10 +8,10 @@ from pytorch_lightning.utilities.rank_zero import rank_zero_info, rank_zero_only
 import torch
 
 # Hide lines below until Lab 04
-from text_recognizer import callbacks as cb
+from question_answer import callbacks as cb
 
 # Hide lines above until Lab 04
-from text_recognizer import lit_models
+from question_answer import lit_models
 
 from training.util import DATA_CLASS_MODULE, import_class, MODEL_CLASS_MODULE, setup_data_and_model_from_args
 

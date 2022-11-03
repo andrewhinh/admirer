@@ -1,25 +1,24 @@
 # Imports
 import argparse
 from collections import defaultdict
-import itertools
 import json
 import os
 from pathlib import Path
 import random
-from typing import Any, Dict, List, Optional, Tuple, Union
+import timeit
+from typing import Any, Dict, List, Tuple, Union
 
 from dotenv import load_dotenv
 import numpy as np
 from onnxruntime import InferenceSession
 import openai
 from PIL import Image
-import timm
 import torch
 from transformers import (
-    AutoFeatureExtractor,
-    AutoModelForImageSegmentation,
     AutoTokenizer,
     CLIPProcessor,
+    DetrFeatureExtractor,
+    DetrForSegmentation,
     pipeline,
     VisionEncoderDecoderModel,
     ViTFeatureExtractor,
@@ -42,7 +41,6 @@ transformers_path = artifact_path / "transformers"
 onnx_path = artifact_path / "onnx"
 
 # Segmentation model config
-resnet_path = transformers_path / "resnet" / "resnet50_a1_0-14fe96d1.pth"
 tag_model = transformers_path / "facebook" / "detr-resnet-50-panoptic"
 max_length = 16
 num_beams = 4
@@ -55,7 +53,13 @@ engine = "text-davinci-002"
 clip_processor = transformers_path / "openai" / "clip-vit-base-patch16"
 clip_onnx = onnx_path / "clip.onnx"
 
+# Loading env variables
 load_dotenv()
+
+# Dataset variables
+num_original_examples = 9009
+num_added_examples = 1236
+num_test_examples = 36
 
 
 # Helper/main classes
@@ -66,12 +70,12 @@ class PICa_OKVQA:
 
     def __init__(
         self,
-        caption_info: Optional[Dict[Any, Any]],
-        tag_info: Optional[Dict[Any, Any]],
-        questions: Optional[Dict[str, List[Dict[str, str]]]],
-        context_idxs: Optional[Dict[str, str]],
-        question_features: Optional[np.ndarray],
-        image_features: Optional[np.ndarray],
+        caption_info: Dict[Any, Any] = None,
+        tag_info: Dict[Any, Any] = None,
+        questions: Dict[str, List[Dict[str, str]]] = None,
+        context_idxs: Dict[str, str] = None,
+        question_features: np.ndarray = None,
+        image_features: np.ndarray = None,
         evaluate: bool = False,
     ):
         self.evaluate = evaluate
@@ -83,6 +87,17 @@ class PICa_OKVQA:
             "%s/captions_train2014.json" % coco_path,
             "%s/mscoco_train2014_annotations.json" % coco_path,
             "%s/OpenEnded_mscoco_train2014_questions.json" % coco_path,
+        )
+        (
+            self.traincontext_caption_dict,
+            _,
+            self.traincontext_answer_dict,
+            self.traincontext_question_dict,
+        ) = self.add_anno(
+            "%s/admirer-pica.json" % coco_path,
+            self.traincontext_caption_dict,
+            self.traincontext_answer_dict,
+            self.traincontext_question_dict,
         )
         if evaluate:
             (
@@ -96,8 +111,7 @@ class PICa_OKVQA:
             )
             # load cached image representation (Coco caption & Tags)
             self.inputtext_dict = self.load_cachetext(self.testcontext_caption_dict, self.testcontext_tags_dict)
-            context_idxs = self.load_similarity(evaluate=evaluate)
-            self.remove_duplicates_in_train(context_idxs)
+            self.load_similarity(evaluate=evaluate)
             question_dict_keys = list(self.testcontext_question_dict.keys())
             image_ids, question_ids = [key.split("<->")[0] for key in question_dict_keys], [
                 key.split("<->")[1] for key in question_dict_keys
@@ -105,22 +119,11 @@ class PICa_OKVQA:
             list_questions = list(self.testcontext_question_dict.values())
             self.questions = {
                 "questions": [
-                    {"image_id": image_id, "question": question_str, "question_id": question_id}
+                    {"image_id": image_id, "question": question_str, "question_id": quest_id}
                     for image_id, question_str, quest_id in zip(image_ids, list_questions, question_ids)
                 ]
             }
         else:
-            (
-                self.traincontext_caption_dict,
-                self.traincontext_answer_dict,
-                self.traincontext_question_dict,
-                _,
-            ) = self.add_anno(
-                "%s/admirer-pica.json" % coco_path,
-                self.traincontext_caption_dict,
-                self.traincontext_answer_dict,
-                self.traincontext_question_dict,
-            )
             # load cached image representation (Coco caption & Tags)
             self.inputtext_dict = self.load_cachetext(caption_info, tag_info)
             _ = self.load_similarity(context_idxs, question_features, image_features)
@@ -133,6 +136,7 @@ class PICa_OKVQA:
 
         if self.evaluate:
             counter = 0
+            start = timeit.default_timer()
 
         keys = list(question_dict.keys())
         for key in keys:
@@ -141,9 +145,6 @@ class PICa_OKVQA:
                 question_dict[key],
                 self.inputtext_dict[img_key],
             )
-            caption_i = caption[
-                random.randint(0, len(caption) - 1)
-            ]  # select one caption if exists multiple, not true except COCO GT (5)
 
             pred_answer_list, pred_prob_list = [], []
             context_key_list = self.get_context_keys(
@@ -167,20 +168,12 @@ class PICa_OKVQA:
                         ):
                             break
                         context_key = self.train_keys[random.randint(0, len(self.train_keys) - 1)]
-                    prompt += (
-                        "Context: %s\n===\n"
-                        % self.traincontext_caption_dict[img_context_key][
-                            random.randint(
-                                0,
-                                len(self.traincontext_caption_dict[img_context_key]) - 1,
-                            )
-                        ]
-                    )
+                    prompt += "Context: %s\n===\n" % self.traincontext_caption_dict[img_context_key]
                     prompt += "Q: %s\nA: %s\n\n===\n" % (
                         self.traincontext_question_dict[context_key],
-                        self.traincontext_answer_dict[context_key][0],
+                        self.traincontext_answer_dict[context_key],
                     )
-                prompt += "Context: %s\n===\n" % caption_i
+                prompt += "Context: %s\n===\n" % caption
                 prompt += "Q: %s\nA:" % question
                 response = None
                 try:
@@ -215,11 +208,19 @@ class PICa_OKVQA:
                 answer = self.testcontext_answer_dict[key]
                 if pred_answer == answer:
                     counter += 1
+                stop = timeit.default_timer()
+                percent_time = timeit.default_timer()
+                fraction_done = (keys.index(key) + 1) / len(keys)
+                expected_time = np.round(((percent_time - start) / fraction_done) / 60, 2)
+                print("Current progress:", np.round(fraction_done * 100, 2), "%")
+                print("Current run time:", np.round((stop - start) / 60, 2), "minutes")
+                print("Expected run time:", expected_time, "minutes")
             else:
                 return pred_answer
 
         return counter / len(keys)
 
+    """
     def rationale(self, answer):
         _, _, question_dict = self.load_anno(questions=self.questions)
 
@@ -265,26 +266,31 @@ class PICa_OKVQA:
             if pred_prob_list[ii] > maxval:
                 maxval, pred_answer = pred_prob_list[ii], pred_answer_list[ii]
         return pred_answer
+    """
 
     def get_context_keys(self, key: str, n: int) -> List[str]:
         """Get context keys based on similarity scores"""
         # combined with Q-similairty (image+question)
         lineid = self.valkey2idx[key]
 
-        # Sanity checking train similarity arrays
+        # Removing validation key from train similarity arrays if needed
         temp_train_feature = None
         temp_image_train_feature = None
-        for encoded_question_idx in range(len(self.train_feature)):
-            if self.val_feature[lineid, :] == self.train_feature[encoded_question_idx]:
+        temp_train_idx = None
+
+        for idx in range(num_original_examples, num_original_examples + num_added_examples):
+            question_feature_equal = np.array_equal(self.val_feature[lineid], self.train_feature[idx])
+            image_feature_equal = np.array_equal(self.val_feature[lineid], self.image_train_feature[idx])
+            if question_feature_equal and image_feature_equal:
                 mask = np.ones(len(self.train_feature), dtype=bool)
-                mask[[encoded_question_idx]] = False
-                temp_train_feature = self.train_feature[mask, ...]
-        for encoded_image_idx in range(len(self.image_train_feature)):
-            if self.val_feature[lineid, :] == self.image_train_feature[encoded_image_idx]:
-                mask = np.ones(len(self.image_train_feature), dtype=bool)
-                mask[[encoded_image_idx]] = False
-                temp_image_train_feature = self.image_train_feature[mask, ...]
-        if temp_train_feature and temp_image_train_feature:
+                mask[[idx]] = False
+                temp_train_feature = self.train_feature[mask]
+                temp_image_train_feature = self.image_train_feature[mask]
+                temp_train_idx = self.train_idx.pop(str(idx))
+                break
+
+        removed = temp_train_feature is not None and temp_image_train_feature is not None and temp_train_idx is not None
+        if removed:
             question_similarity: np.ndarray = np.matmul(temp_train_feature, self.val_feature[lineid, :])
             # end of Q-similairty
             similarity: np.ndarray = question_similarity + np.matmul(
@@ -302,9 +308,9 @@ class PICa_OKVQA:
 
     def load_similarity(
         self,
-        context_idxs: Optional[Dict[str, str]],
-        question_features: Optional[np.ndarray],
-        image_features: Optional[np.ndarray],
+        context_idxs: Dict[str, str] = None,
+        question_features: np.ndarray = None,
+        image_features: np.ndarray = None,
         evaluate=False,
     ):
         # Add question train feature, image train feature, and train idx
@@ -320,11 +326,11 @@ class PICa_OKVQA:
         )
 
         if evaluate:
-            context_idxs = dict(list(self.train_idx.items())[9009:])
+            context_idxs = dict(list(self.train_idx.items())[num_original_examples:])
             new_keys = [str(idx) for idx in range(len(context_idxs))]
             context_idxs = dict(zip(new_keys, list(context_idxs.values())))
-            self.val_feature = self.train_feature[-1236:, :]
-            self.image_val_feature = self.image_train_feature[-1236:, :]
+            self.val_feature = self.train_feature[-num_added_examples:, :]
+            self.image_val_feature = self.image_train_feature[-num_added_examples:, :]
         else:
             self.val_feature = question_features
             self.image_val_feature = image_features
@@ -333,40 +339,39 @@ class PICa_OKVQA:
         self.valkey2idx: Dict[str, int] = {}
         for ii in val_idx:
             self.valkey2idx[val_idx[ii]] = int(ii)
-        return val_idx
 
     def load_tags(
         self,
-        tag_info: Dict(Any, List[str]),
+        tag_info: Dict[Any, List[str]],
     ) -> Dict[int, str]:
         """Loads tags for an image"""
         tags_dict = {}
         image_ids, list_tags = list(tag_info.keys()), list(tag_info.values())
         # Concatenate tags into one string
-        list_str_tags = [", ".join([x for x in tags]) for tags in list_tags]
+        list_str_tags = [tags for tags in list_tags]
         for id in range(len(image_ids)):
             tags_dict[image_ids[id]] = list_str_tags[id]
         return tags_dict
 
     def load_cachetext(
         self,
-        caption_info: Dict(Any, List[str]),
-        tag_info: Dict(Any, List[str]),
+        caption_info: Dict[Any, List[str]],
+        tag_info: Dict[Any, List[str]],
     ):
         """Loads and adds cachetect to the caption"""
         tags_dict = self.load_tags(tag_info)
         caption_dict = {}
         image_ids, captions = list(caption_info.keys()), list(caption_info.values())
         for id in range(len(image_ids)):
-            caption_dict[image_ids[id]] = captions[id] + ". " + tags_dict[id]
+            caption_dict[image_ids[id]] = captions[id] + ". " + list(tags_dict.values())[id]
         return caption_dict
 
     def load_anno(
         self,
-        coco_caption_file: Optional[Path],
-        answer_anno_file: Optional[Path],
-        question_anno_file: Optional[Path],
-        questions: Optional[Dict[str, List[Dict[str, str]]]],
+        coco_caption_file: Path = None,
+        answer_anno_file: Path = None,
+        question_anno_file: Path = None,
+        questions: Dict[str, List[Dict[str, str]]] = None,
     ) -> Tuple[Dict[int, List[str]], Dict[str, List[str]], Dict[str, str]]:
         """Loads annotation from a caption file"""
         # Define default dictionaries
@@ -408,12 +413,12 @@ class PICa_OKVQA:
     def add_anno(
         self,
         add: Path,
-        context_caption_dict: Optional[Dict[int, List[str]]],
-        context_answer_dict=Optional[Dict[str, List[str]]],
-        context_question_dict=Optional[Dict[str, str]],
+        context_caption_dict: Dict[int, List[str]] = None,
+        context_answer_dict: Dict[str, List[str]] = None,
+        context_question_dict: Dict[str, str] = None,
         evaluate=False,
     ):
-        """Add extra annotations to the annotations dictionaries"""
+        """Load/add extra annotations to the annotations dictionaries"""
         add_dict = json.load(open(add, "r"))
 
         context_tag_dict = {}
@@ -439,25 +444,12 @@ class PICa_OKVQA:
         context_question_dict.update(question_add)
 
         if evaluate:
-            context_caption_dict = dict(list(context_caption_dict.items())[-36:])
-            context_tag_dict = dict(list(context_tag_dict.items())[-36:])
-            context_answer_dict = dict(list(context_answer_dict.items())[-36:])
-            context_question_dict = dict(list(context_question_dict.items())[-36:])
+            context_caption_dict = dict(list(context_caption_dict.items())[-num_test_examples:])
+            context_tag_dict = dict(list(context_tag_dict.items())[-num_test_examples:])
+            context_answer_dict = dict(list(context_answer_dict.items())[-num_test_examples:])
+            context_question_dict = dict(list(context_question_dict.items())[-num_test_examples:])
 
-        return context_caption_dict, context_answer_dict, context_question_dict, context_tag_dict
-
-    def remove_duplicates_in_train(self, val_idx: Dict[str, str]):
-        """Removes val idxs from self.train_idx if evaluating"""
-        self.train_idx.update(val_idx)
-        idx = 0
-        num_keys = self.train_idx.keys()
-        while idx < len(num_keys):
-            key_to_check = self.train_idx[str(idx)]
-            if sum(map((key_to_check).__eq__, self.train_idx.values())) > 1:
-                self.train_idx = {key: val for key, val in self.train_idx.items() if val != key_to_check}
-            else:
-                idx += 1
-            num_keys = self.train_idx.keys()
+        return context_caption_dict, context_tag_dict, context_answer_dict, context_question_dict
 
     def process_answer(self, answer):
         """Processes answer by removing unwanted characters and words"""
@@ -475,16 +467,9 @@ class Pipeline:
 
     def __init__(self):
         # Tagging model setup
-        segment_model = AutoModelForImageSegmentation.from_pretrained(tag_model, use_pretrained_backbone=False)
-        resnet_model = timm.create_model(
-            "resnet50", pretrained=False, features_only=True, out_indices=(1, 2, 3, 4), in_chans=3
-        )
-        resnet_weights = torch.load(resnet_path)
-        resnet_weights_no_head = dict(itertools.islice(resnet_weights.items(), len(resnet_weights) - 2))
-        resnet_model.load_state_dict(resnet_weights_no_head)
-        segment_model.detr.model.backbone.conv_encoder.model = resnet_model
+        segment_model = DetrForSegmentation.from_pretrained(tag_model, use_pretrained_backbone=False)
         self.segment = pipeline(
-            "image-segmentation", model=segment_model, feature_extractor=AutoFeatureExtractor.from_pretrained(tag_model)
+            "image-segmentation", model=segment_model, feature_extractor=DetrFeatureExtractor.from_pretrained(tag_model)
         )
         self.tags = []
 
@@ -528,10 +513,14 @@ class Pipeline:
         # Generating image tag(s)
         for dic in self.segment(image_pil):
             self.tags.append(dic["label"])
-        tag_info: Dict[int, List[str]] = {img_id: self.tags}
+        if not self.tags:
+            self.tags.append("")
+        tag_info: Dict[int, List[str]] = {img_id: ", ".join(self.tags)}
 
         # Generating image caption
         caption = self.predict_caption(image_pil)
+        if not caption:
+            caption = ""
         caption_info: Dict[int, str] = {img_id: caption}
 
         # Generating image/question features

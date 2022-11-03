@@ -3,7 +3,7 @@ import sys
 import unittest
 
 sys.path.append("../")
-from answer import Pipeline
+from question_answer.answer import Pipeline
 
 
 class TestEvaluateCaption(unittest.TestCase):

@@ -5,17 +5,43 @@ import subprocess
 
 # Build container image
 os.environ["LAMBDA_NAME"] = "admirer-backend"
-subprocess.run(["cd", ".."], shell=True)
 subprocess.run(
-    ["docker", "build", "--no-cache", "-t", os.environ["LAMBDA_NAME"], ".", "--file", "api_serverless/Dockerfile"]
+    [
+        "docker",
+        "build",
+        "--no-cache",
+        "-t",
+        os.environ["LAMBDA_NAME"],
+        ".",
+        "--file",
+        "api_serverless/Dockerfile",
+    ]
 )
-subprocess.run(["cd", "backend_setup"], shell=True)
 
 
 # Upload to the container registry
-proc = subprocess.run(["aws", "sts", "get-caller-identity", "--query", "Account"], stdout=subprocess.PIPE, text=True)
+proc = subprocess.run(
+    [
+        "aws",
+        "sts",
+        "get-caller-identity",
+        "--query",
+        "Account",
+    ],
+    stdout=subprocess.PIPE,
+    text=True,
+)
 aws_account_id = proc.stdout
-proc = subprocess.run(["aws", "configure", "get", "region"], stdout=subprocess.PIPE, text=True)
+proc = subprocess.run(
+    [
+        "aws",
+        "configure",
+        "get",
+        "region",
+    ],
+    stdout=subprocess.PIPE,
+    text=True,
+)
 aws_region = proc.stdout
 os.environ["AWS_REGION"] = aws_region.strip("\n")
 os.environ["AWS_ACCOUNT_ID"] = aws_account_id.replace('"', "").strip("\n")

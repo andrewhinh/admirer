@@ -32,7 +32,7 @@
     - `python -c "from app_gradio.tests.test_app import test_local_run; test_local_run()"` to test the Gradio frontend by launching and pinging the frontend locally.
     - `. ./training/tests/test_memorize_caption.sh` to test the caption model's ability to memorize a single batch.
     - the shell scripts in `tasks` to test various aspects of the model pipeline (Ex: `. ./tasks/REPLACE`, replacing `REPLACE` with the corresponding shell script path).
-- The other files and folders support the main folders.
+- The other files and folders support the main folders in various ways from storing configurations to workflow scripts.
 
 # Credit
 - GI4E for their [database](https://www.unavarra.es/gi4e/databases/gi4e/?languageId=1) and [Scale AI](https://scale.com/) for their annotations.

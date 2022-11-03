@@ -9,9 +9,9 @@ from PIL import Image, ImageOps
 import toml
 
 from question_answer import util
-from text_recognizer.data.base_data_module import _download_raw_dataset, load_and_print_info
-import text_recognizer.metadata.iam as metadata
-from text_recognizer.metadata.iam_paragraphs import NEW_LINE_TOKEN
+from question_answer.data.base_data_module import _download_raw_dataset, load_and_print_info
+import question_answer.metadata.iam as metadata
+from question_answer.metadata.iam_paragraphs import NEW_LINE_TOKEN
 
 
 METADATA_FILENAME = metadata.METADATA_FILENAME

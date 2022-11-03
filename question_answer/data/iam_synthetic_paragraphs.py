@@ -8,17 +8,17 @@ from PIL import Image
 from pytorch_lightning.utilities.rank_zero import rank_zero_info
 import torch
 
-from text_recognizer.data.base_data_module import load_and_print_info
-from text_recognizer.data.iam import IAM
-from text_recognizer.data.iam_lines import (
+from question_answer.data.base_data_module import load_and_print_info
+from question_answer.data.iam import IAM
+from question_answer.data.iam_lines import (
     generate_line_crops_and_labels,
     load_processed_line_crops,
     load_processed_line_labels,
     save_images_and_labels,
 )
-from text_recognizer.data.iam_paragraphs import IAMParagraphs
-from text_recognizer.data.util import convert_strings_to_labels
-import text_recognizer.metadata.iam_synthetic_paragraphs as metadata
+from question_answer.data.iam_paragraphs import IAMParagraphs
+from question_answer.data.util import convert_strings_to_labels
+import question_answer.metadata.iam_synthetic_paragraphs as metadata
 
 
 NEW_LINE_TOKEN = metadata.NEW_LINE_TOKEN

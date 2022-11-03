@@ -4,8 +4,8 @@ from PIL import Image
 from torchvision import transforms
 
 
-import text_recognizer.metadata.iam_lines as metadata
-from text_recognizer.stems.image import ImageStem
+import question_answer.metadata.iam_lines as metadata
+from question_answer.stems.image import ImageStem
 
 
 class LineStem(ImageStem):

@@ -8,11 +8,11 @@ import numpy as np
 from PIL import Image
 from pytorch_lightning.utilities.rank_zero import rank_zero_info
 
-from text_recognizer.data.base_data_module import BaseDataModule, load_and_print_info
-from text_recognizer.data.iam import IAM
-from text_recognizer.data.util import BaseDataset, convert_strings_to_labels, resize_image
-import text_recognizer.metadata.iam_paragraphs as metadata
-from text_recognizer.stems.paragraph import ParagraphStem
+from question_answer.data.base_data_module import BaseDataModule, load_and_print_info
+from question_answer.data.iam import IAM
+from question_answer.data.util import BaseDataset, convert_strings_to_labels, resize_image
+import question_answer.metadata.iam_paragraphs as metadata
+from question_answer.stems.paragraph import ParagraphStem
 
 
 IMAGE_SCALE_FACTOR = metadata.IMAGE_SCALE_FACTOR

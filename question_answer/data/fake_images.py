@@ -4,7 +4,7 @@ import argparse
 import torch
 import torchvision
 
-from text_recognizer.data.base_data_module import BaseDataModule
+from question_answer.data.base_data_module import BaseDataModule
 
 
 _NUM_SAMPLES = 512

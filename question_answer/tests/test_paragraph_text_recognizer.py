@@ -6,7 +6,7 @@ import time
 
 from torchmetrics.functional.text.cer import char_error_rate
 
-from text_recognizer.paragraph_text_recognizer import ParagraphTextRecognizer
+from question_answer.answer import Pipeline
 
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
@@ -26,7 +26,7 @@ def test_paragraph_text_recognizer():
         support_data_by_file_id = json.load(f)
 
     start_time = time.time()
-    text_recognizer = ParagraphTextRecognizer()
+    text_recognizer = Pipeline()
     end_time = time.time()
     print(f"Time taken to initialize ParagraphTextRecognizer: {round(end_time - start_time, 2)}s")
 
@@ -44,7 +44,7 @@ def test_paragraph_text_recognizer():
         print(f"Character error rate is {round(cer, 3)} for file {support_filename.name} (time taken: {time_taken}s)")
 
 
-def _test_paragraph_text_recognizer(image_filename: Path, expected_text: str, text_recognizer: ParagraphTextRecognizer):
+def _test_paragraph_text_recognizer(image_filename: Path, expected_text: str, text_recognizer: Pipeline):
     """Test ParagraphTextRecognizer on 1 image."""
     predicted_text = text_recognizer.predict(image_filename)
     assert predicted_text == expected_text, f"predicted text does not match expected for {image_filename.name}"

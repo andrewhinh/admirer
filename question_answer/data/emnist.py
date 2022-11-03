@@ -10,10 +10,10 @@ import h5py
 import numpy as np
 import toml
 
-from text_recognizer.data.base_data_module import _download_raw_dataset, BaseDataModule, load_and_print_info
-from text_recognizer.data.util import BaseDataset, split_dataset
-import text_recognizer.metadata.emnist as metadata
-from text_recognizer.stems.image import ImageStem
+from question_answer.data.base_data_module import _download_raw_dataset, BaseDataModule, load_and_print_info
+from question_answer.data.util import BaseDataset, split_dataset
+import question_answer.metadata.emnist as metadata
+from question_answer.stems.image import ImageStem
 from question_answer.util import temporary_working_directory
 
 NUM_SPECIAL_TOKENS = metadata.NUM_SPECIAL_TOKENS

@@ -9,8 +9,8 @@ import torch
 from torch.utils.data import ConcatDataset, DataLoader
 
 from question_answer import util
-from text_recognizer.data.util import BaseDataset
-import text_recognizer.metadata.shared as metadata
+from question_answer.data.util import BaseDataset
+import question_answer.metadata.shared as metadata
 
 
 def load_and_print_info(data_module_class) -> None:

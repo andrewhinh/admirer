@@ -1,4 +1,4 @@
-import text_recognizer.metadata.shared as shared
+import question_answer.metadata.shared as shared
 
 RAW_DATA_DIRNAME = shared.DATA_DIRNAME / "raw" / "iam"
 METADATA_FILENAME = RAW_DATA_DIRNAME / "metadata.toml"

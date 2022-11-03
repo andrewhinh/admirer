@@ -1,8 +1,6 @@
 """Run validation test for question_answer module."""
-import sys
 import unittest
 
-sys.path.append("../")
 from question_answer.answer import Pipeline
 
 

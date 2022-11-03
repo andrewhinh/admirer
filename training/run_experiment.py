@@ -7,13 +7,9 @@ import pytorch_lightning as pl
 from pytorch_lightning.utilities.rank_zero import rank_zero_info, rank_zero_only
 import torch
 
-# Hide lines below until Lab 04
 from question_answer import callbacks as cb
-
-# Hide lines above until Lab 04
 from question_answer import lit_models
-
-from training.util import DATA_CLASS_MODULE, import_class, MODEL_CLASS_MODULE, setup_data_and_model_from_args
+from .util import DATA_CLASS_MODULE, import_class, MODEL_CLASS_MODULE, setup_data_and_model_from_args
 
 
 # In order to ensure reproducible experiments, we must set random seeds.
@@ -32,22 +28,18 @@ def _setup_parser():
     parser.set_defaults(max_epochs=1)
 
     # Basic arguments
-    # Hide lines below until Lab 04
     parser.add_argument(
         "--wandb",
         action="store_true",
         default=False,
         help="If passed, logs experiment results to Weights & Biases. Otherwise logs only to local Tensorboard.",
     )
-    # Hide lines above until Lab 04
-    # Hide lines below until Lab 05
     parser.add_argument(
         "--profile",
         action="store_true",
         default=False,
         help="If passed, uses the PyTorch Profiler to track computation, exported as a Chrome-style trace.",
     )
-    # Hide lines above until Lab 05
     parser.add_argument(
         "--data_class",
         type=str,

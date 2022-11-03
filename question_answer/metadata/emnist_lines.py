@@ -1,7 +1,7 @@
 from pathlib import Path
 
-import text_recognizer.metadata.emnist as emnist
-import text_recognizer.metadata.shared as shared
+import question_answer.metadata.emnist as emnist
+import question_answer.metadata.shared as shared
 
 PROCESSED_DATA_DIRNAME = shared.DATA_DIRNAME / "processed" / "emnist_lines"
 ESSENTIALS_FILENAME = Path(__file__).parents[1].resolve() / "data" / "emnist_lines_essentials.json"

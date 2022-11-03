@@ -5,7 +5,7 @@ import shutil
 import numpy as np
 import pytest
 
-from text_recognizer.data import emnist
+from question_answer.data import emnist
 
 
 @pytest.mark.data

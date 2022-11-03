@@ -5,7 +5,6 @@ import json
 import os
 from pathlib import Path
 import random
-import timeit
 from typing import Any, Dict, List, Tuple, Union
 
 from dotenv import load_dotenv
@@ -136,7 +135,6 @@ class PICa_OKVQA:
 
         if self.evaluate:
             counter = 0
-            start = timeit.default_timer()
 
         keys = list(question_dict.keys())
         for key in keys:
@@ -208,13 +206,6 @@ class PICa_OKVQA:
                 answer = self.testcontext_answer_dict[key]
                 if pred_answer == answer:
                     counter += 1
-                stop = timeit.default_timer()
-                percent_time = timeit.default_timer()
-                fraction_done = (keys.index(key) + 1) / len(keys)
-                expected_time = np.round(((percent_time - start) / fraction_done) / 60, 2)
-                print("Current progress:", np.round(fraction_done * 100, 2), "%")
-                print("Current run time:", np.round((stop - start) / 60, 2), "minutes")
-                print("Expected run time:", expected_time, "minutes")
             else:
                 return pred_answer
 
@@ -548,7 +539,7 @@ class Pipeline:
             evaluate=True,
         )
         acc = okvqa.answer_gen()
-        return acc
+        print(acc)
 
 
 # Running model

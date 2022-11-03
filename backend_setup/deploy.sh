@@ -2,7 +2,7 @@
 while :
 do
     git fetch
-    if [ "$(git rev-list HEAD...origin/main --count)" == 0 ]; then
+    if [ "$(git rev-list HEAD...origin/main --count)" != 0 ]; then
         echo "Checking if backend needs to be updated..."
         git pull
 

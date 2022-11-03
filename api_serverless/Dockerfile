@@ -11,5 +11,6 @@ RUN pip install -r requirements.txt
 #   note that we use a .dockerignore file to avoid copying logs etc.
 COPY question_answer/ ./question_answer
 COPY api_serverless/api.py ./api.py
+COPY .env .env
 
 CMD ["api.handler"]

@@ -152,7 +152,7 @@ class PICa_OKVQA:
 
             for repeat in range(n_ensemble):
                 # prompt format following GPT-3 QA API
-                prompt = "Please answer the question according to the above context.\n===\n"
+                prompt = "Answer the question according to the given context.\n===\n"
                 for ni in range(n_shot):
                     if context_key_list is None:
                         context_key = self.train_keys[random.randint(0, len(self.train_keys) - 1)]
@@ -167,34 +167,36 @@ class PICa_OKVQA:
                             break
                         context_key = self.train_keys[random.randint(0, len(self.train_keys) - 1)]
                     prompt += "Context: %s\n===\n" % self.traincontext_caption_dict[img_context_key]
-                    prompt += "Q: %s\nA: %s\n\n===\n" % (
+                    prompt += "Question: %s\nAnswer: %s\n\n===\n" % (
                         self.traincontext_question_dict[context_key],
                         self.traincontext_answer_dict[context_key],
                     )
                 prompt += "Context: %s\n===\n" % caption
-                prompt += "Q: %s\nA:" % question
+                prompt += "Question: %s\nAnswer:" % question
                 response = None
                 try:
                     response = openai.Completion.create(
                         engine=engine,
                         prompt=prompt,
-                        max_tokens=5,
+                        max_tokens=80,
                         logprobs=1,
-                        temperature=0.0,
+                        temperature=0.7,
                         stream=False,
                         stop=["\n", "<|endoftext|>"],
-                    )
+                    )["choices"][0]
                 except Exception as e:
                     print(e)
                     exit(0)
 
                 plist = []
-                for ii in range(len(response["choices"][0]["logprobs"]["tokens"])):
-                    if response["choices"][0]["logprobs"]["tokens"][ii] == "\n":
+                for ii in range(len(response["logprobs"]["tokens"])):
+                    if response["logprobs"]["tokens"][ii] == "\n":
                         break
-                    plist.append(response["choices"][0]["logprobs"]["token_logprobs"][ii])
-                pred_answer_list.append(self.process_answer(response["choices"][0]["text"]))
+                    plist.append(response["logprobs"]["token_logprobs"][ii])
+                pred_answer_list.append(self.process_answer(response["text"]))
                 pred_prob_list.append(sum(plist))
+                
+            # Choose the prediction with highest log probs
             maxval = -999.0
             for ii in range(len(pred_prob_list)):
                 if pred_prob_list[ii] > maxval:

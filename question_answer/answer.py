@@ -152,7 +152,7 @@ class PICa_OKVQA:
 
             for repeat in range(n_ensemble):
                 # prompt format following GPT-3 QA API
-                prompt = "Please answer the question according to the above context.\n===\n"
+                prompt = "Answer the question according to the given context.\n===\n"
                 for ni in range(n_shot):
                     if context_key_list is None:
                         context_key = self.train_keys[random.randint(0, len(self.train_keys) - 1)]
@@ -167,12 +167,12 @@ class PICa_OKVQA:
                             break
                         context_key = self.train_keys[random.randint(0, len(self.train_keys) - 1)]
                     prompt += "Context: %s\n===\n" % self.traincontext_caption_dict[img_context_key]
-                    prompt += "Q: %s\nA: %s\n\n===\n" % (
+                    prompt += "Question: %s\nAnswer: %s\n\n===\n" % (
                         self.traincontext_question_dict[context_key],
                         self.traincontext_answer_dict[context_key],
                     )
                 prompt += "Context: %s\n===\n" % caption
-                prompt += "Q: %s\nA:" % question
+                prompt += "Question: %s\nAnswer:" % question
                 response = None
                 try:
                     response = openai.Completion.create(

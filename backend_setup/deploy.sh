@@ -6,14 +6,14 @@ do
         echo "Checking if backend needs to be updated..."
         git pull
 
-        python ./training/stage_model.py --fetch
+        python3 ./training/stage_model.py --fetch
 
         BEST_ACC=$(< ./question_answer/evaluation/best_pica_acc.txt)
-        NEW_ACC=$(python ./question_answer/evaluation/evaluate_pica.py)
+        NEW_ACC=$(python3 ./question_answer/evaluation/evaluate_pica.py)
         if [ "$NEW_ACC" \> "$BEST_ACC" ]; then
             echo "Updating backend..."
             echo "$NEW_ACC" >| ./question_answer/evaluation/best_pica_acc.txt
-            python ./backend_setup/deploy.py
+            python3 ./backend_setup/deploy.py
         else
             echo "No improvement -> no updates made"
 

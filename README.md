@@ -15,7 +15,7 @@
     - conda activate fsdl-text-recognizer-2022 -> conda activate admirer
 3. Run `pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113` if you're using a newer NVIDIA RTX GPU.
 4. Sign up for OpenAI's API to get an API key, populate a `.env` file with your OpenAI API key in the format of `.env.template`, and reactivate (just activate again) the environment.
-5. Run `python ./training/stage_model --fetch` to download the model weights and GPT-3 context examples locally.
+5. Sign up for a Weights and Biases account and run `python ./training/stage_model --fetch` to download the model weights and GPT-3 context examples locally.
 ## Notes
 - The repo is separated into folders that each describe a part of the ML-project lifecycle:
     - `api_serverless`: the backend handler code using `AWS Lambda`.

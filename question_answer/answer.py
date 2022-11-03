@@ -178,9 +178,9 @@ class PICa_OKVQA:
                     response = openai.Completion.create(
                         engine=engine,
                         prompt=prompt,
-                        max_tokens=5,
+                        max_tokens=80,
                         logprobs=1,
-                        temperature=0.0,
+                        temperature=0.7,
                         stream=False,
                         stop=["\n", "<|endoftext|>"],
                     )["choices"][0]
@@ -195,6 +195,8 @@ class PICa_OKVQA:
                     plist.append(response["logprobs"]["token_logprobs"][ii])
                 pred_answer_list.append(self.process_answer(response["text"]))
                 pred_prob_list.append(sum(plist))
+                
+            # Choose the prediction with highest log probs
             maxval = -999.0
             for ii in range(len(pred_prob_list)):
                 if pred_prob_list[ii] > maxval:

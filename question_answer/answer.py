@@ -183,17 +183,17 @@ class PICa_OKVQA:
                         temperature=0.0,
                         stream=False,
                         stop=["\n", "<|endoftext|>"],
-                    )
+                    )["choices"][0]
                 except Exception as e:
                     print(e)
                     exit(0)
 
                 plist = []
-                for ii in range(len(response["choices"][0]["logprobs"]["tokens"])):
-                    if response["choices"][0]["logprobs"]["tokens"][ii] == "\n":
+                for ii in range(len(response["logprobs"]["tokens"])):
+                    if response["logprobs"]["tokens"][ii] == "\n":
                         break
-                    plist.append(response["choices"][0]["logprobs"]["token_logprobs"][ii])
-                pred_answer_list.append(self.process_answer(response["choices"][0]["text"]))
+                    plist.append(response["logprobs"]["token_logprobs"][ii])
+                pred_answer_list.append(self.process_answer(response["text"]))
                 pred_prob_list.append(sum(plist))
             maxval = -999.0
             for ii in range(len(pred_prob_list)):

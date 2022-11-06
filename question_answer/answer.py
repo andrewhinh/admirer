@@ -23,6 +23,9 @@ from transformers import (
     ViTFeatureExtractor,
 )
 
+from question_answer.lit_models.metrics import BertF1Score
+import question_answer.metadata.pica as metadata
+
 # Variables
 # Artifact path
 artifact_path = Path(__file__).resolve().parent / "artifacts" / "answer"
@@ -56,9 +59,9 @@ clip_onnx = onnx_path / "clip.onnx"
 load_dotenv()
 
 # Dataset variables
-num_original_examples = 9009
-num_added_examples = 1236
-num_test_examples = 36
+NUM_ORIGINAL_EXAMPLES = metadata.NUM_ORIGINAL_EXAMPLES
+NUM_ADDED_EXAMPLES = metadata.NUM_ADDED_EXAMPLES
+NUM_TEST_EXAMPLES = metadata.NUM_TEST_EXAMPLES
 
 
 # Helper/main classes
@@ -134,7 +137,8 @@ class PICa_OKVQA:
         _, _, question_dict = self.load_anno(questions=self.questions)
 
         if self.evaluate:
-            counter = 0
+            pred_answers = []
+            gt_answers = []
 
         keys = list(question_dict.keys())
         for key in keys:
@@ -195,7 +199,7 @@ class PICa_OKVQA:
                     plist.append(response["logprobs"]["token_logprobs"][ii])
                 pred_answer_list.append(self.process_answer(response["text"]))
                 pred_prob_list.append(sum(plist))
-                
+
             # Choose the prediction with highest log probs
             maxval = -999.0
             for ii in range(len(pred_prob_list)):
@@ -206,12 +210,12 @@ class PICa_OKVQA:
 
             if self.evaluate:
                 answer = self.testcontext_answer_dict[key]
-                if pred_answer == answer:
-                    counter += 1
+                pred_answers.append(pred_answer)
+                gt_answers.append(answer)
             else:
                 return pred_answer
 
-        return counter / len(keys)
+        return BertF1Score()(pred_answers, gt_answers)
 
     """
     def rationale(self, answer):
@@ -271,7 +275,7 @@ class PICa_OKVQA:
         temp_image_train_feature = None
         temp_train_idx = None
 
-        for idx in range(num_original_examples, num_original_examples + num_added_examples):
+        for idx in range(NUM_ORIGINAL_EXAMPLES, NUM_ORIGINAL_EXAMPLES + NUM_ADDED_EXAMPLES):
             question_feature_equal = np.array_equal(self.val_feature[lineid], self.train_feature[idx])
             image_feature_equal = np.array_equal(self.val_feature[lineid], self.image_train_feature[idx])
             if question_feature_equal and image_feature_equal:
@@ -319,11 +323,11 @@ class PICa_OKVQA:
         )
 
         if evaluate:
-            context_idxs = dict(list(self.train_idx.items())[num_original_examples:])
+            context_idxs = dict(list(self.train_idx.items())[NUM_ORIGINAL_EXAMPLES:])
             new_keys = [str(idx) for idx in range(len(context_idxs))]
             context_idxs = dict(zip(new_keys, list(context_idxs.values())))
-            self.val_feature = self.train_feature[-num_added_examples:, :]
-            self.image_val_feature = self.image_train_feature[-num_added_examples:, :]
+            self.val_feature = self.train_feature[-NUM_ADDED_EXAMPLES:, :]
+            self.image_val_feature = self.image_train_feature[-NUM_ADDED_EXAMPLES:, :]
         else:
             self.val_feature = question_features
             self.image_val_feature = image_features
@@ -437,10 +441,10 @@ class PICa_OKVQA:
         context_question_dict.update(question_add)
 
         if evaluate:
-            context_caption_dict = dict(list(context_caption_dict.items())[-num_test_examples:])
-            context_tag_dict = dict(list(context_tag_dict.items())[-num_test_examples:])
-            context_answer_dict = dict(list(context_answer_dict.items())[-num_test_examples:])
-            context_question_dict = dict(list(context_question_dict.items())[-num_test_examples:])
+            context_caption_dict = dict(list(context_caption_dict.items())[-NUM_TEST_EXAMPLES:])
+            context_tag_dict = dict(list(context_tag_dict.items())[-NUM_TEST_EXAMPLES:])
+            context_answer_dict = dict(list(context_answer_dict.items())[-NUM_TEST_EXAMPLES:])
+            context_question_dict = dict(list(context_question_dict.items())[-NUM_TEST_EXAMPLES:])
 
         return context_caption_dict, context_tag_dict, context_answer_dict, context_question_dict
 

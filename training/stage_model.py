@@ -21,7 +21,6 @@ from wandb.sdk.wandb_run import Run
 # these names are all set by the pl.loggers.WandbLogger
 MODEL_CHECKPOINT_TYPE = "model"
 BEST_CHECKPOINT_ALIAS = "best"
-MODEL_CHECKPOINT_PATH = "model.ckpt"
 LOG_DIR = Path("training") / "logs"
 
 STAGED_MODEL_TYPE = "prod-ready"
@@ -56,19 +55,18 @@ def main(args):
         job_type="stage", project=DEFAULT_PROJECT, dir=LOG_DIR
     ):  # log staging to W&B so prod and training are connected
         # find the model checkpoint and retrieve its artifact name and an api handle
-        ckpt_at, ckpt_api = find_artifact(
-            args.staged_model_name, DEFAULT_PROJECT, type=MODEL_CHECKPOINT_TYPE, alias=args.ckpt_alias, run=args.run
-        )
+        if args.run:
+            ckpt_at, ckpt_api = find_artifact(type=MODEL_CHECKPOINT_TYPE, alias=args.ckpt_alias, run=args.run)
 
-        # get the run that produced that checkpoint
-        logging_run = get_logging_run(ckpt_api)
-        print_info(ckpt_api, logging_run)
+            # get the run that produced that checkpoint
+            logging_run = get_logging_run(ckpt_api)
+            print_info(ckpt_api, logging_run)
+
+            # download the checkpoint to the staging directory
+            download_artifact(ckpt_at, prod_staging_directory)
 
         # create an artifact for the staged, deployable model
         staged_at = wandb.Artifact(args.staged_model_name, type=STAGED_MODEL_TYPE)
-        # download the checkpoint to the staging directory
-        download_artifact(ckpt_at, prod_staging_directory)
-
         # upload the staged model so it can be downloaded elsewhere
         upload_staged_model(staged_at, from_directory=prod_staging_directory)
 

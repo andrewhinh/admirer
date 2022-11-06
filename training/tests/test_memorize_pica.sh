@@ -16,7 +16,7 @@ CRITERION="${2:-1.0}"
 GPU=$(python -c 'import torch; print(int(torch.cuda.is_available()))')
 
 python ./training/run_experiment.py \
-  --data_class=IAMParagraphs --model_class=ResnetTransformer --loss=transformer \
+  --data_class=PICa --model_class=ViT2GPT2 \
   --limit_test_batches 0.0 --overfit_batches 1 --num_sanity_val_steps 0 \
   --augment_data false --tf_dropout 0.0 \
   --gpus "$GPU" --precision 16 --batch_size 16 --lr 0.0001 \

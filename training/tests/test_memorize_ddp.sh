@@ -11,7 +11,7 @@ CRITERION="${2:-0.1}"
 echo "running with configuration tuned on 8xV100"
 echo "- note that num_workers > 1 speeds up training but results in multiprocessing errors in terminal"
 python ./training/run_experiment.py \
-  --data_class=IAMOriginalAndSyntheticParagraphs --model_class=ResnetTransformer --loss=transformer \
+  --data_class=PICa --model_class=ViT2GPT2 --loss=transformer \
   --limit_test_batches 0.0 --overfit_batches 1 --num_sanity_val_steps 0 \
   --augment_data false --tf_dropout 0.0 \
   --gpus 8 --precision 16 --strategy=ddp_find_unused_parameters_false --num_workers 1 --batch_size 16 --lr 0.0001 \

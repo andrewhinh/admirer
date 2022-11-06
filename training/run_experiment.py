@@ -9,7 +9,7 @@ import torch
 
 from question_answer import callbacks as cb
 from question_answer import lit_models
-from .util import DATA_CLASS_MODULE, import_class, MODEL_CLASS_MODULE, setup_data_and_model_from_args
+from training.util import DATA_CLASS_MODULE, import_class, MODEL_CLASS_MODULE, setup_data_and_model_from_args
 
 
 # In order to ensure reproducible experiments, we must set random seeds.
@@ -43,13 +43,13 @@ def _setup_parser():
     parser.add_argument(
         "--data_class",
         type=str,
-        default="MNIST",
+        default="PICa",
         help=f"String identifier for the data class, relative to {DATA_CLASS_MODULE}.",
     )
     parser.add_argument(
         "--model_class",
         type=str,
-        default="MLP",
+        default="ViT2GPT2",
         help=f"String identifier for the model class, relative to {MODEL_CLASS_MODULE}.",
     )
     parser.add_argument(
@@ -76,7 +76,7 @@ def _setup_parser():
     model_class.add_to_argparse(model_group)
 
     lit_model_group = parser.add_argument_group("LitModel Args")
-    lit_models.BaseLitModel.add_to_argparse(lit_model_group)
+    lit_models.GPT2.add_to_argparse(lit_model_group)
 
     parser.add_argument("--help", "-h", action="help")
     return parser
@@ -113,29 +113,22 @@ def main():
     args = parser.parse_args()
     data, model = setup_data_and_model_from_args(args)
 
-    lit_model_class = lit_models.BaseLitModel
-
-    # Hide lines below until Lab 03
-    if args.loss == "transformer":
-        lit_model_class = lit_models.TransformerLitModel
-    # Hide lines above until Lab 03
+    lit_model_class = lit_models.GPT2
 
     if args.load_checkpoint is not None:
-        lit_model = lit_model_class.load_from_checkpoint(args.load_checkpoint, args=args, model=model)
+        lit_model = lit_model_class.load_from_checkpoint(
+            args.load_checkpoint, args=args, model=model.vit2gpt2, tokenizer=model.gpt2_tokenizer
+        )
     else:
-        lit_model = lit_model_class(args=args, model=model)
+        lit_model = lit_model_class(model=model.vit2gpt2, tokenizer=model.gpt2_tokenizer, args=args)
 
     log_dir = Path("training") / "logs"
     _ensure_logging_dir(log_dir)
     logger = pl.loggers.TensorBoardLogger(log_dir)
     experiment_dir = logger.log_dir
 
-    goldstar_metric = "validation/cer" if args.loss in ("transformer",) else "validation/loss"
+    goldstar_metric = "validation/loss"
     filename_format = "epoch={epoch:04d}-validation.loss={validation/loss:.3f}"
-    # Hide lines below until Lab 03
-    if goldstar_metric == "validation/cer":
-        filename_format += "-validation.cer={validation/cer:.3f}"
-    # Hide lines above until Lab 03
     checkpoint_callback = pl.callbacks.ModelCheckpoint(
         save_top_k=5,
         filename=filename_format,
@@ -149,27 +142,22 @@ def main():
     summary_callback = pl.callbacks.ModelSummary(max_depth=2)
 
     callbacks = [summary_callback, checkpoint_callback]
-    # Hide lines below until Lab 04
     if args.wandb:
         logger = pl.loggers.WandbLogger(log_model="all", save_dir=str(log_dir), job_type="train")
         logger.watch(model, log_freq=max(100, args.log_every_n_steps))
         logger.log_hyperparams(vars(args))
         experiment_dir = logger.experiment.dir
     callbacks += [cb.ModelSizeLogger(), cb.LearningRateMonitor()]
-    # Hide lines above until Lab 04
     if args.stop_early:
         early_stopping_callback = pl.callbacks.EarlyStopping(
             monitor="validation/loss", mode="min", patience=args.stop_early
         )
         callbacks.append(early_stopping_callback)
 
-    # Hide lines below until Lab 04
-    if args.wandb and args.loss in ("transformer",):
+    if args.wandb:
         callbacks.append(cb.ImageToTextLogger())
 
-    # Hide lines above until Lab 04
     trainer = pl.Trainer.from_argparse_args(args, callbacks=callbacks, logger=logger)
-    # Hide lines below until Lab 05
     if args.profile:
         sched = torch.profiler.schedule(wait=0, warmup=3, active=4, repeat=0)
         profiler = pl.profiler.PyTorchProfiler(export_to_chrome=True, schedule=sched, dirpath=experiment_dir)
@@ -178,23 +166,18 @@ def main():
         profiler = pl.profiler.PassThroughProfiler()
 
     trainer.profiler = profiler
-    # Hide lines above until Lab 05
 
     trainer.tune(lit_model, datamodule=data)  # If passing --auto_lr_find, this will set learning rate
 
     trainer.fit(lit_model, datamodule=data)
 
-    # Hide lines below until Lab 05
     trainer.profiler = pl.profiler.PassThroughProfiler()  # turn profiling off during testing
-    # Hide lines above until Lab 05
 
     best_model_path = checkpoint_callback.best_model_path
     if best_model_path:
         rank_zero_info(f"Best model saved at: {best_model_path}")
-        # Hide lines below until Lab 04
         if args.wandb:
             rank_zero_info("Best model also uploaded to W&B ")
-        # Hide lines above until Lab 04
         trainer.test(datamodule=data, ckpt_path=best_model_path)
     else:
         trainer.test(lit_model, datamodule=data)

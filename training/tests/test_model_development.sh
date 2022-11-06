@@ -12,8 +12,8 @@ else
 fi
 
 echo "training smaller version of real model class on real data"
-python training/run_experiment.py --data_class=IAMParagraphs --model_class=ResnetTransformer --loss=transformer \
-  --tf_dim 4 --tf_fc_dim 2 --tf_layers 2 --tf_nhead 2 --batch_size 2 --lr 0.0001 \
+python training/run_experiment.py --data_class=PICa --model_class=ViT2GPT2 \
+  --batch_size 2 --lr 0.0001 \
   --limit_train_batches 1 --limit_val_batches 1 --limit_test_batches 1 --num_sanity_val_steps 0 \
   --num_workers 1 --wandb || FAILURE=true
 
@@ -34,7 +34,7 @@ if [ "$FAILURE" = true ]; then
   exit 1
 fi
 echo "cleaning up local and remote files"
-rm -rf text_recognizer/artifacts/test-dummy
+rm -rf question_answer/artifacts/test-dummy
 python training/cleanup_artifacts.py --run_ids "$TRAIN_RUN" "$STAGE_RUN" --all -v
 # note: if $TRAIN_RUN and $STAGE_RUN are not set, this will fail.
 #  that's good because it avoids all artifacts from the project being deleted due to the --all.

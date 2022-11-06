@@ -9,6 +9,16 @@ except ImportError:
     has_wandb = False
 
 from .util import check_and_warn
+from question_answer.lit_models.util import generate_sentence_from_image
+from torchvision import transforms
+
+
+descale = transforms.Compose(
+    [
+        transforms.Normalize(mean=[0.0, 0.0, 0.0], std=1 / 0.5),
+        transforms.Normalize(mean=-0.5, std=[1.0, 1.0, 1.0]),
+    ]
+)
 
 
 class ImageToTextTableLogger(pl.Callback):
@@ -18,42 +28,40 @@ class ImageToTextTableLogger(pl.Callback):
         super().__init__()
         self.max_images_to_log = min(max(max_images_to_log, 1), 32)
         self.on_train = on_train
-        self._required_keys = ["gt_strs", "pred_strs"]
 
     @rank_zero_only
     def on_train_batch_end(self, trainer, module, output, batch, batch_idx):
         if self.on_train:
-            if self.has_metrics(output):
-                if check_and_warn(trainer.logger, "log_table", "image-to-text table"):
-                    return
-                else:
-                    self._log_image_text_table(trainer, output, batch, "train/predictions")
-
-    @rank_zero_only
-    def on_validation_batch_end(self, trainer, module, output, batch, batch_idx, dataloader_idx):
-        if self.has_metrics(output):
             if check_and_warn(trainer.logger, "log_table", "image-to-text table"):
                 return
             else:
-                self._log_image_text_table(trainer, output, batch, "validation/predictions")
+                self._log_image_text_table(trainer, output, batch, "train/predictions")
+
+    @rank_zero_only
+    def on_validation_batch_end(self, trainer, module, output, batch, batch_idx, dataloader_idx):
+        if check_and_warn(trainer.logger, "log_table", "image-to-text table"):
+            return
+        else:
+            self._log_image_text_table(trainer, output, batch, "validation/predictions")
 
     def _log_image_text_table(self, trainer, output, batch, key):
-        xs, _ = batch
-        gt_strs = output["gt_strs"]
-        pred_strs = output["pred_strs"]
-
-        mx = self.max_images_to_log
-        xs, gt_strs, pred_strs = xs[:mx], gt_strs[:mx], pred_strs[:mx]
-
-        xs = [wandb.Image(x) for x in xs]
-
-        rows = zip(*[xs, gt_strs, pred_strs])
-
-        columns = ["input_image", "ground_truth_string", "predicted_string"]
-        trainer.logger.log_table(key=key, columns=columns, data=list(rows))
-
-    def has_metrics(self, output):
-        return all(key in output.keys() for key in self._required_keys)
+        images, actual_sentences = batch
+        trainer = trainer.model
+        encoder_outputs = trainer.model.encoder(pixel_values=images.to(trainer.device))
+        generated_sentences = generate_sentence_from_image(
+            trainer.model,
+            encoder_outputs,
+            trainer.tokenizer,
+            trainer.max_label_length,
+            trainer.device,
+            trainer.top_k,
+            trainer.top_p,
+        )
+        images = [wandb.Image(transforms.ToPILImage()(descale(image))) for image in images]
+        data = list(map(list, zip(images, actual_sentences, generated_sentences)))
+        columns = ["Images", "Actual Sentence", "Generated Sentence"]
+        table = wandb.Table(data=data, columns=columns)
+        trainer.logger.experiment.log({f"epoch {trainer.current_epoch} results": table})
 
 
 class ImageToTextCaptionLogger(pl.Callback):

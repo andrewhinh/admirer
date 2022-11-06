@@ -19,6 +19,6 @@ def setup_data_and_model_from_args(args: argparse.Namespace):
     model_class = import_class(f"{MODEL_CLASS_MODULE}.{args.model_class}")
 
     data = data_class(args)
-    model = model_class(data_config=data.config(), args=args)
+    model = model_class(args=args)
 
     return data, model

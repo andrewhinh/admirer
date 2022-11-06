@@ -4,7 +4,7 @@ import unittest
 from question_answer.answer import Pipeline
 
 
-class TestEvaluateCaption(unittest.TestCase):
+class TestEvaluatePICa(unittest.TestCase):
     """Evaluate Caption on the additionally-added PICa examples."""
 
     def test_evaluate(self):
@@ -13,7 +13,7 @@ class TestEvaluateCaption(unittest.TestCase):
 
 
 def main():
-    testcase = TestEvaluateCaption()
+    testcase = TestEvaluatePICa()
     return testcase.test_evaluate()
 
 

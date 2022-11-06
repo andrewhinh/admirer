@@ -8,13 +8,12 @@ import pytorch_lightning as pl
 import torch
 from torch.utils.data import ConcatDataset, DataLoader
 
-from question_answer import util
 from question_answer.data.util import BaseDataset
 import question_answer.metadata.shared as metadata
 
 
 def load_and_print_info(data_module_class) -> None:
-    """Load EMNISTLines and print info."""
+    """Load Dataset and print info."""
     parser = argparse.ArgumentParser()
     data_module_class.add_to_argparse(parser)
     args = parser.parse_args()
@@ -24,21 +23,7 @@ def load_and_print_info(data_module_class) -> None:
     print(dataset)
 
 
-def _download_raw_dataset(metadata: Dict, dl_dirname: Path) -> Path:
-    dl_dirname.mkdir(parents=True, exist_ok=True)
-    filename = dl_dirname / metadata["filename"]
-    if filename.exists():
-        return filename
-    print(f"Downloading raw dataset from {metadata['url']} to {filename}...")
-    util.download_url(metadata["url"], filename)
-    print("Computing SHA-256...")
-    sha256 = util.compute_sha256(filename)
-    if sha256 != metadata["sha256"]:
-        raise ValueError("Downloaded data file SHA-256 does not match that listed in metadata document.")
-    return filename
-
-
-BATCH_SIZE = 128
+BATCH_SIZE = 8
 NUM_AVAIL_CPUS = len(os.sched_getaffinity(0))
 NUM_AVAIL_GPUS = torch.cuda.device_count()
 
@@ -65,7 +50,6 @@ class BaseDataModule(pl.LightningDataModule):
         # Make sure to set the variables below in subclasses
         self.input_dims: Tuple[int, ...]
         self.output_dims: Tuple[int, ...]
-        self.mapping: Collection
         self.data_train: Union[BaseDataset, ConcatDataset]
         self.data_val: Union[BaseDataset, ConcatDataset]
         self.data_test: Union[BaseDataset, ConcatDataset]
@@ -92,7 +76,7 @@ class BaseDataModule(pl.LightningDataModule):
 
     def config(self):
         """Return important settings of the dataset, which will be passed to instantiate models."""
-        return {"input_dims": self.input_dims, "output_dims": self.output_dims, "mapping": self.mapping}
+        return {"input_dims": self.input_dims, "output_dims": self.output_dims}
 
     def prepare_data(self, *args, **kwargs) -> None:
         """Take the first steps to prepare data for use.

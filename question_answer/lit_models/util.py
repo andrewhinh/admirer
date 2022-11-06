@@ -1,79 +1,52 @@
-from typing import Union
+from tqdm.auto import tqdm
+from typing import List, Optional, Union
 
 import torch
+import torch.nn.functional as F
 
 
-def first_appearance(x: torch.Tensor, element: Union[int, float], dim: int = 1) -> torch.Tensor:
-    """Return indices of first appearance of element in x, collapsing along dim.
+def top_k_top_p_filtering(
+    next_token_logits: torch.FloatTensor,
+    top_k: Optional[float] = None,
+    top_p: Optional[float] = None,
+    device: Union[str, torch.device] = "cpu",
+) -> torch.FloatTensor:
+    if top_k is None:
+        top_k = next_token_logits.shape[-1]
+    if top_p is None:
+        top_p = 1.0
 
-    Based on https://discuss.pytorch.org/t/first-nonzero-index/24769/9
+    p, largest_p_idx = F.softmax(next_token_logits, dim=-1).topk(top_k, dim=-1)
+    cumulative_p = p.cumsum(dim=-1)
+    threshold_repeated = top_p + torch.zeros((len(p), 1)).to(device)
+    idx = torch.searchsorted(cumulative_p, threshold_repeated).clip(max=top_k - 1).squeeze()
+    cutoffs = cumulative_p[torch.arange(len(cumulative_p)), idx]
+    censored_p = (cumulative_p <= cutoffs[:, None]) * p
+    renormalized_p = censored_p / censored_p.sum(dim=-1, keepdims=True)
 
-    Parameters
-    ----------
-    x
-        One or two-dimensional Tensor to search for element.
-    element
-        Item to search for inside x.
-    dim
-        Dimension of Tensor to collapse over.
+    final_p = torch.zeros_like(next_token_logits)
+    row_idx = torch.arange(len(p)).unsqueeze(1).repeat(1, top_k).to(device)
+    final_p[row_idx, largest_p_idx] = renormalized_p.to(final_p.dtype)
 
-    Returns
-    -------
-    torch.Tensor
-        Indices where element occurs in x. If element is not found,
-        return length of x along dim. One dimension smaller than x.
-
-    Raises
-    ------
-    ValueError
-        if x is not a 1 or 2 dimensional Tensor
-
-    Examples
-    --------
-    >>> first_appearance(torch.tensor([[1, 2, 3], [2, 3, 3], [1, 1, 1], [3, 1, 1]]), 3)
-    tensor([2, 1, 3, 0])
-    >>> first_appearance(torch.tensor([1, 2, 3]), 1, dim=0)
-    tensor(0)
-    """
-    if x.dim() > 2 or x.dim() == 0:
-        raise ValueError(f"only 1 or 2 dimensional Tensors allowed, got Tensor with dim {x.dim()}")
-    matches = x == element
-    first_appearance_mask = (matches.cumsum(dim) == 1) & matches
-    does_match, match_index = first_appearance_mask.max(dim)
-    first_inds = torch.where(does_match, match_index, x.shape[dim])
-    return first_inds
+    return final_p
 
 
-def replace_after(x: torch.Tensor, element: Union[int, float], replace: Union[int, float]) -> torch.Tensor:
-    """Replace all values in each row of 2d Tensor x after the first appearance of element with replace.
+def generate_sentence_from_image(
+    model, encoder_outputs, tokenizer, max_text_length: int, device, top_k: int, top_p: int
+) -> List[str]:
+    generated_so_far = torch.LongTensor([[tokenizer.bos_token_id]] * len(encoder_outputs.last_hidden_state)).to(device)
+    with torch.no_grad():
+        for _ in tqdm(range(max_text_length)):
+            attention_mask = torch.ones_like(generated_so_far)
+            decoder_out = model(
+                decoder_input_ids=generated_so_far,
+                decoder_attention_mask=attention_mask,
+                encoder_outputs=encoder_outputs,
+            )
 
-    Parameters
-    ----------
-    x
-        Two-dimensional Tensor (shape denoted (B, S)) to replace values in.
-    element
-        Item to search for inside x.
-    replace
-        Item that replaces entries that appear after element.
+            next_token_logits = decoder_out["logits"][:, -1, :]
+            filtered_p = top_k_top_p_filtering(next_token_logits, top_k=top_k, top_p=top_p, device=device)
+            next_token = torch.multinomial(filtered_p, num_samples=1)
+            generated_so_far = torch.cat((generated_so_far, next_token), dim=1)
 
-    Returns
-    -------
-    outs
-        New Tensor of same shape as x with values after element replaced.
-
-    Examples
-    --------
-    >>> replace_after(torch.tensor([[1, 2, 3], [2, 3, 3], [1, 1, 1], [3, 1, 1]]), 3, 4)
-    tensor([[1, 2, 3],
-            [2, 3, 4],
-            [1, 1, 1],
-            [3, 4, 4]])
-    """
-    first_appearances = first_appearance(x, element, dim=1)  # (B,)
-    indices = torch.arange(0, x.shape[-1]).type_as(x)  # (S,)
-    outs = torch.where(
-        indices[None, :] <= first_appearances[:, None],  # if index is before first appearance
-        x,  # return the value from x
-        replace,  # otherwise, return the replacement value
-    )
-    return outs  # (B, S)
+    return [tokenizer.decode(coded_sentence) for coded_sentence in generated_so_far]

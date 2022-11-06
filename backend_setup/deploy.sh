@@ -8,11 +8,12 @@ do
 
         python3 ./training/stage_model.py --fetch
 
-        BEST_ACC=$(< ./question_answer/evaluation/best_pica_acc.txt)
-        NEW_ACC=$(python3 ./question_answer/evaluation/evaluate_pica.py)
-        if [ "$NEW_ACC" \> "$BEST_ACC" ]; then
+        CURRENT_F1_PATH=./question_answer/evaluation/best_pica_f1.txt
+        CURRENT_F1_SCORE=$(< "$CURRENT_F1_PATH")
+        NEW_F1=$(python3 ./question_answer/evaluation/evaluate_pica.py)
+        if [ "$NEW_F1" \> "$CURRENT_F1_SCORE" ]; then
             echo "Updating backend..."
-            echo "$NEW_ACC" >| ./question_answer/evaluation/best_pica_acc.txt
+            echo "$NEW_F1" >| "$CURRENT_F1_PATH"
             python3 ./backend_setup/deploy.py
         else
             echo "No improvement -> no updates made"

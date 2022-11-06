@@ -1,42 +1,32 @@
 """Special-purpose metrics for tracking our model performance."""
-from typing import Sequence
+from pathlib import Path
 
-import torch
 import torchmetrics
 
+BERT_SCORE_PATH = (
+    Path(__file__).resolve().parents[2] / "question_answer" / "artifacts" / "answer" / "transformers" / "bert_score"
+)
 
-class CharacterErrorRate(torchmetrics.CharErrorRate):
+
+class BertF1Score(torchmetrics.text.bert.BERTScore):
     """Character error rate metric, allowing for tokens to be ignored."""
 
-    def __init__(self, ignore_tokens: Sequence[int], *args):
-        super().__init__(*args)
-        self.ignore_tokens = set(ignore_tokens)
+    def __init__(self, model_type=BERT_SCORE_PATH):
+        super().__init__(model_type)
 
-    def update(self, preds: torch.Tensor, targets: torch.Tensor):  # type: ignore
-        preds_l = [[t for t in pred if t not in self.ignore_tokens] for pred in preds.tolist()]
-        targets_l = [[t for t in target if t not in self.ignore_tokens] for target in targets.tolist()]
-        super().update(preds_l, targets_l)
+    def __call__(self, preds, targets):
+        f1s = super().__call__(preds, targets)["f1"]
+        return sum(f1s) / len(f1s)
 
 
-def test_character_error_rate():
-    metric = CharacterErrorRate([0, 1])
-    X = torch.tensor(
-        [
-            [0, 2, 2, 3, 3, 1],  # error will be 0
-            [0, 2, 1, 1, 1, 1],  # error will be .75
-            [0, 2, 2, 4, 4, 1],  # error will be .5
-        ]
-    )
-    Y = torch.tensor(
-        [
-            [0, 2, 2, 3, 3, 1],
-            [0, 2, 2, 3, 3, 1],
-            [0, 2, 2, 3, 3, 1],
-        ]
-    )
-    metric(X, Y)
-    assert metric.compute() == sum([0, 0.75, 0.5]) / 3
+def test_bert_f1_score():
+    bert_f1 = BertF1Score()
+    preds = ["hello there", "general kenobi"]
+    target = ["hello there", "master kenobi"]
+    f1 = bert_f1(preds, target)
+    ex_f1s = [0.9999998807907104, 0.9960542917251587]  # On main page of torchmetrics page for BERTScore
+    assert f1 == sum(ex_f1s) / len(ex_f1s)
 
 
 if __name__ == "__main__":
-    test_character_error_rate()
+    test_bert_f1_score()

@@ -23,7 +23,6 @@ from transformers import (
     ViTFeatureExtractor,
 )
 
-from question_answer.lit_models.metrics import BertF1Score
 import question_answer.metadata.pica as metadata
 
 # Variables
@@ -214,6 +213,7 @@ class PICa_OKVQA:
                 gt_answers.append(answer)
             else:
                 return pred_answer
+        from question_answer.lit_models.metrics import BertF1Score
 
         return BertF1Score()(pred_answers, gt_answers)
 

@@ -54,12 +54,12 @@ class TestPICa(TestDataset):
         assert dataset.input_dims[-2:] == dataset.x_trainval[0].shape  # ToTensor() adds a dimension
         assert len(dataset.output_dims) == len(dataset.y_trainval.shape)  # == 1
 
-    def test_iam_parsed_lines(self, pica_dataset):
+    def test_paired(self, pica_dataset):
         """Tests that we retrieve the same number of captions and screenshots."""
         for id in pica_dataset.all_ids:
             assert len(pica_dataset.caption_by_id[id]) == len(pica_dataset.screenshot_url_by_id[id])
 
-    def test_iam_data_splits(self, pica_dataset):
+    def test_data_splits(self, pica_dataset):
         """Fails when any identifiers are shared between training, test, or validation."""
         assert not set(pica_dataset.train_ids) & set(pica_dataset.validation_ids)
         assert not set(pica_dataset.train_ids) & set(pica_dataset.test_ids)

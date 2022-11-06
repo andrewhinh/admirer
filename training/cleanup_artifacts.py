@@ -23,12 +23,18 @@ import wandb
 
 api = wandb.Api()
 
-DEFAULT_PROJECT = "admirer"
+DEFAULT_PROJECT = "admirer-training"
 DEFAULT_ENTITY = api.default_entity
 
 
 def _setup_parser():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--project",
+        type=str,
+        default=DEFAULT_PROJECT,
+        help=f"The project from which to remove artifacts. Default is {DEFAULT_PROJECT}",
+    )
     parser.add_argument(
         "--run_ids",
         type=str,
@@ -72,7 +78,7 @@ def _setup_parser():
 
 
 def main(args):
-    project_path = f"{DEFAULT_ENTITY}/{DEFAULT_PROJECT}"
+    project_path = f"{DEFAULT_ENTITY}/{args.project}"
 
     runs = _get_runs(project_path, args.run_ids, args.run_name_res, verbose=args.verbose)
     artifact_selector = _get_selector_from(args)

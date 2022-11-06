@@ -36,6 +36,7 @@ n_shot = 32  # PICa paper doesn't utilize newer model, so context can be higher
 n_ensemble = 5
 coco_path = artifact_path / "coco_annotations"
 similarity_path = artifact_path / "coco_clip_new"
+engine = "text-davinci-002"
 
 # Model setup
 transformers_path = artifact_path / "transformers"
@@ -48,7 +49,7 @@ num_beams = 4
 
 # Caption model config
 caption_model = transformers_path / "nlpconnect" / "vit-gpt2-image-captioning"
-engine = "text-davinci-002"
+# caption_model = transformers_path / "trained_caption" / "model.pt"
 
 # CLIP Encoders config
 clip_processor = transformers_path / "openai" / "clip-vit-base-patch16"
@@ -213,6 +214,7 @@ class PICa_OKVQA:
                 gt_answers.append(answer)
             else:
                 return pred_answer
+
         from question_answer.lit_models.metrics import BertF1Score
 
         return BertF1Score()(pred_answers, gt_answers)

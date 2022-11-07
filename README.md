@@ -20,8 +20,8 @@ To setup the production server for the website in an AWS EC2 instance, we instal
     - ~~cd fsdl-text-recognizer-2022-labs~~ -> cd admirer
     - ~~conda activate fsdl-text-recognizer-2022~~ -> conda activate admirer
 3. If you're using a newer NVIDIA RTX GPU, run `pip3 install torch torchvision torchaudio` then `pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113`.
-4. Sign up for OpenAI's API to get an API key, populate a `.env` file with your OpenAI API key in the format of `.env.template`, and reactivate (just activate again) the environment.
-5. Sign up for a Weights and Biases account and run `python ./training/stage_model --fetch --from_project admirer` to download the models and context examples locally.
+4. Sign up for OpenAI's API [here](https://openai.com/api/) to get an API key, populate a `.env` file with your OpenAI API key in the format of `.env.template`, and reactivate (just activate again) the environment.
+5. Sign up for a Weights and Biases account [here](https://wandb.ai/signup), follow the steps after running `wandb login`, and run `python ./training/stage_model --fetch --from_project admirer` to download the models and context examples locally.
 ## Notes
 - The repo is separated into folders that each describe a part of the ML-project lifecycle, some of which contain notebooks that allow for interaction with these components:
     - `api_serverless`: the backend handler code using `AWS Lambda`.

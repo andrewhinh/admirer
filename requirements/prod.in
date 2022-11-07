@@ -21,4 +21,5 @@ transformers
 timm
 onnxruntime==1.12.1
 python-dotenv
-wandb==0.12.17 # For continual learning
+# for continual learning
+wandb==0.12.17

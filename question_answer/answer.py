@@ -548,6 +548,7 @@ class Pipeline:
         )
         acc = okvqa.answer_gen()
         print(acc)
+        return acc
 
 
 # Running model

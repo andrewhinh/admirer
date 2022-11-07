@@ -7,7 +7,7 @@
 - The MVP of the website was built by Andrew Hinh as a top-25 final project for the FSDL 2022 course in which only the deployment code was written. The project was continued by The Transformees (Andrew Hinh and Aleks Hiidenhovi, a FSDL alum) as a submission for the ZenML Month of MLOps Competition. The data management, model development, testing, and continual learning scripts were additionally developed in the alloted time.
 
 # Production
-To setup the production server for the website in a (free!) AWS EC2 instance, we simply run:
+To setup the production server for the website in an AWS EC2 instance, we install basic packages such as `pip`, pull the repo, do some package setup, and simply run:
 1. `python3 app_gradio/app.py --flagging --model_url=https://joiajq6syp65ueonto4mswttzu0apfbi.lambda-url.us-west-1.on.aws/` to setup the Gradio app with an AWS Lambda backend.
 2. `lt --port 11700 --subdomain admirer` to serve the Gradio app over a permanent localtunnel link.
 3. `. ./backend_setup/deploy.sh` to implement continual learning by updating the AWS Lambda backend when signaled by a pushed commit to the repo and checking if the BERTScore computed F1 score of the pipeline has improved.

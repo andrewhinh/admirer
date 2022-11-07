@@ -13,7 +13,11 @@ do
         NEW_F1=$(python3 ./question_answer/evaluation/evaluate_pica.py)
         if [ "$NEW_F1" \> "$CURRENT_F1_SCORE" ]; then
             echo "Updating backend..."
+
             echo "$NEW_F1" >| "$CURRENT_F1_PATH"
+            AWS_ACCOUNT_NUMBER=$(dotenv get AWS_ACCOUNT_NUMBER)
+            aws --region us-west-1 ecr get-login-password | docker login --username AWS --password-stdin "${AWS_ACCOUNT_NUMBER}.dkr.ecr.us-west-1.amazonaws.com"
+
             python3 ./backend_setup/deploy.py
         else
             echo "No improvement -> no updates made"

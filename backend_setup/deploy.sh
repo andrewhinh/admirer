@@ -18,7 +18,7 @@ do
         else
             echo "No improvement -> no updates made"
 
-        rm -rf ./question_answer/artifacts
+        rm -rf ./question_answer/artifacts/answer
         fi
     fi
 done

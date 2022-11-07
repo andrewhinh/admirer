@@ -10,8 +10,7 @@
 To setup the production server for the website in a (free!) AWS EC2 instance, we simply run:
 1. `python3 app_gradio/app.py --flagging --model_url=https://joiajq6syp65ueonto4mswttzu0apfbi.lambda-url.us-west-1.on.aws/` to setup the Gradio app with an AWS Lambda backend.
 2. `lt --port 11700 --subdomain admirer` to serve the Gradio app over a permanent localtunnel link.
-3. `. ./backend_setup/deploy.sh` to implement continual learning by updating the AWS Lambda backend when signaled by a pushed commit to the repo and checking if the overall performance of the pipeline has improved.
-    - Note: we measured performance using an "expressive-biased" accuracy, meaning we give GPT-3 the point if it returns the right answer regardless of a few filler words, and don't if it returns either the wrong answer or too undescriptive of an answer.
+3. `. ./backend_setup/deploy.sh` to implement continual learning by updating the AWS Lambda backend when signaled by a pushed commit to the repo and checking if the [BERTScore](https://torchmetrics.readthedocs.io/en/stable/text/bert_score.html) computed F1 score of the pipeline has improved.
 
 # Development
 ## Setup

@@ -6,7 +6,7 @@ do
         echo "Checking if backend needs to be updated..."
         git pull
 
-        python3 ./training/stage_model.py --fetch
+        python3 ./training/stage_model.py --fetch --from_project admirer
 
         CURRENT_F1_PATH=./question_answer/evaluation/best_pica_f1.txt
         CURRENT_F1_SCORE=$(< "$CURRENT_F1_PATH")

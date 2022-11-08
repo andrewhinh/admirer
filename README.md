@@ -4,7 +4,7 @@
 # Description
 - A full-stack ML-powered website that utilizes users’ webcam feeds to answer open-ended questions requiring outside knowledge.
 - The website and repository together serve as an open-source demonstration and implementation of a visual question-answering model in a full-stack machine learning product. The visual question-answering pipeline is inspired by a paper from Microsoft; in short, we prompt GPT-3 with a generated image caption and object tag list, the question-answer pair, and context examples that demonstrate the task at hand in a few-shot learning method, achieving a [BERTScore](https://torchmetrics.readthedocs.io/en/stable/text/bert_score.html) computed F1 score of around .989 on the test set.
-- The MVP of the website was built by Andrew Hinh as a top-25 final project for the FSDL 2022 course in which only the deployment code was written. The project was continued by The Transformees (Andrew Hinh and Aleks Hiidenhovi, a FSDL alum) as a submission for the ZenML Month of MLOps Competition. The data management, model development, testing, and continual learning scripts were additionally developed in the alloted time.
+- The MVP of the website was built by Andrew Hinh as a top-25 final project for the [FSDL 2022 course](https://fullstackdeeplearning.com/course/2022/) in which only the deployment code was written. The project was continued by `The Transformees` (Andrew Hinh and Aleks Hiidenhovi, a FSDL alum) as a submission for the [ZenML Month of MLOps Competition](https://zenml.notion.site/ZenML-s-Month-of-MLOps-Competition-Announcement-3c59f628447c48f1944035de85ff1a5f). The data management, model development, testing, and continual learning scripts were additionally developed in the alloted time.
 
 # Production
 To setup the production server for the website in an AWS EC2 instance, we install basic packages such as `pip`, pull the repo, do some package setup, and simply run:
@@ -16,9 +16,9 @@ To setup the production server for the website in an AWS EC2 instance, we instal
 ## Setup
 1. Clone repo.
 2. Follow the steps listed [here](https://github.com/full-stack-deep-learning/fsdl-text-recognizer-2022-labs/tree/main/setup#local), replacing the following commands:
-    - ~~git clone https://github.com/full-stack-deep-learning/fsdl-text-recognizer-2022-labs.git~~ -> git clone https://github.com/andrewhinh/admirer.git
-    - ~~cd fsdl-text-recognizer-2022-labs~~ -> cd admirer
-    - ~~conda activate fsdl-text-recognizer-2022~~ -> conda activate admirer
+    - ~~`git clone https://github.com/full-stack-deep-learning/fsdl-text-recognizer-2022-labs.git`~~ -> `git clone https://github.com/andrewhinh/admirer.git`
+    - ~~`cd fsdl-text-recognizer-2022-labs`~~ -> `cd admirer`
+    - ~~`conda activate fsdl-text-recognizer-2022`~~ -> `conda activate admirer`
 3. If you're using a newer NVIDIA RTX GPU, run `pip3 uninstall torch torchvision torchaudio` then `pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113`.
 4. Sign up for OpenAI's API [here](https://openai.com/api/) to get an API key.
 5. Sign up for an AWS account and get your account ID found at the beginning of the line below "Repository Name" [here](https://us-west-2.console.aws.amazon.com/ecr/create-repository?region=us-west-2).

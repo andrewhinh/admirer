@@ -18,7 +18,6 @@ subprocess.run(
     ]
 )
 
-
 # Upload to the container registry
 proc = subprocess.run(
     [
@@ -49,41 +48,21 @@ os.environ["ECR_URI"] = ".".join(
     [os.environ["AWS_ACCOUNT_ID"], "dkr", "ecr", os.environ["AWS_REGION"], "amazonaws.com"]
 )
 
-subprocess.run(
-    [
-        "aws",
-        "ecr",
-        "get-login-password",
-        "--region",
-        os.environ["AWS_REGION"],
-        "|",
-        "docker",
-        "login",
-        "--username",
-        "AWS",
-        "--password-stdin",
-        os.environ["ECR_URI"],
-    ],
-    shell=True,
-)
-subprocess.run(
-    [
-        "aws",
-        "ecr",
-        "create-repository",
-        "--repository-name",
-        os.environ["LAMBDA_NAME"],
-        "--image-scanning-configuration",
-        "scanOnPush=true",
-        "--image-tag-mutability",
-        "MUTABLE",
-        "|",
-        "jq",
-        "-C",
-    ],
-    shell=True,
-)
-
 os.environ["IMAGE_URI"] = "/".join([os.environ["ECR_URI"], os.environ["LAMBDA_NAME"]])
 subprocess.run(["docker", "tag", os.environ["LAMBDA_NAME"] + ":latest", os.environ["IMAGE_URI"] + ":latest"])
 subprocess.run(["docker", "push", os.environ["IMAGE_URI"] + ":latest"])
+
+# Update the AWS Lambda function accordingly
+proc = subprocess.run(
+    [
+        "aws",
+        "lambda",
+        "update-function-code",
+        "--function-name",
+        os.environ["LAMBDA_NAME"],
+        "--image-uri",
+        os.environ["IMAGE_URI"],
+    ],
+    stdout=subprocess.PIPE,
+    text=True,
+)

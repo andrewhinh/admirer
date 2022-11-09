@@ -25,8 +25,8 @@ pip-tools-upgrade:
 	pip-compile --upgrade requirements/prod.in && pip-compile --upgrade requirements/dev.in && pip-compile --upgrade requirements/dev-lint.in
 
 # Example training command
-train-mnist-cnn-ddp:
-	python training/run_experiment.py --max_epochs=10 --gpus=-1 --accelerator=ddp --num_workers=20 --data_class=MNIST --model_class=CNN
+train-pica-vit2gpt2-ddp:
+	python training/run_experiment.py --max_epochs=10 --gpus=-1 --accelerator=ddp --num_workers=20 --data_class=PICa --model_class=ViT2GPT2
 
 # Lint
 lint:

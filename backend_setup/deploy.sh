@@ -15,8 +15,10 @@ do
             echo "Updating backend..."
 
             echo "$NEW_F1" >| "$CURRENT_F1_PATH"
-            AWS_ACCOUNT_NUMBER=$(dotenv get AWS_ACCOUNT_NUMBER)
-            aws --region us-west-1 ecr get-login-password | docker login --username AWS --password-stdin "${AWS_ACCOUNT_NUMBER}.dkr.ecr.us-west-1.amazonaws.com"
+
+            AWS_REGION=$(aws configure get region)
+            AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account | sed 's/"//g')
+            aws --region "$AWS_REGION" ecr get-login-password | docker login --username AWS --password-stdin "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
 
             python3 ./backend_setup/deploy.py
         else

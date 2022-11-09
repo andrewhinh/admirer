@@ -32,11 +32,11 @@ artifact_path = Path(__file__).resolve().parent / "artifacts" / "answer"
 # PICa formatting/config
 img_id = 100  # Random idx for inference
 question_id = 1005  # Random idx for inference
-n_shot = 32  # PICa paper (which uses <=16) doesn't utilize newer model, so setting higher b/c accuracy very dependent on this
-n_ensemble = 3  # Max tested = 5, but main driver of cost with very small added benefit, so keeping it smaller
+engine = "text-curie-001"
+n_shot = 16  # If using text-davinci-002 engine, can set to 32 b/c max # of tokens/request is higher
+n_ensemble = 3  # PICa's max tested = 5, but it's a signficant driver of cost with very small added benefit, so keeping it smaller
 coco_path = artifact_path / "coco_annotations"
 similarity_path = artifact_path / "coco_clip_new"
-engine = "text-davinci-002"
 
 # Model setup
 transformers_path = artifact_path / "transformers"

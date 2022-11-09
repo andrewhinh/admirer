@@ -1,4 +1,4 @@
-"""AWS Lambda function serving text_recognizer predictions."""
+"""AWS Lambda function serving question_answer predictions."""
 import json
 
 from PIL import ImageStat

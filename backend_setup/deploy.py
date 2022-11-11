@@ -61,6 +61,6 @@ proc = subprocess.run(
         "--function-name",
         os.environ["LAMBDA_NAME"],
         "--image-uri",
-        os.environ["IMAGE_URI"],
+        os.environ["IMAGE_URI"] + ":latest",
     ],
 )

@@ -22,7 +22,7 @@ To setup the production server for the website in an AWS EC2 instance, we instal
 3. If you're using a newer NVIDIA RTX GPU, run `pip3 uninstall torch torchvision torchaudio` then `pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113`.
 4. Sign up for OpenAI's API [here](https://openai.com/api/), populate a `.env` file with your OpenAI API key in the format of `.env.template`, and reactivate (just activate again) the environment.
 5. Sign up for an AWS account [here](https://us-west-2.console.aws.amazon.com/ecr/create-repository?region=us-west-2) and follow the steps after running `aws configure`.
-6. Sign up for a Weights and Biases account [here](https://wandb.ai/signup), follow the steps after running `wandb login`, and run `python ./training/stage_model --fetch --from_project admirer` to download the models and context examples locally.
+6. Sign up for a Weights and Biases account [here](https://wandb.ai/signup), follow the steps after running `wandb login`, and run `python ./training/stage_model.py --fetch --from_project admirer` to download the models and context examples locally.
 ## Notes
 - The repo is separated into folders that each describe a part of the ML-project lifecycle, some of which contain notebooks that allow for interaction with these components:
     - `api_serverless`: the backend handler code using `AWS Lambda`.
@@ -35,7 +35,7 @@ To setup the production server for the website in an AWS EC2 instance, we instal
     - `tasks`: the pipeline testing code.
     - `training` for the model development code using `PyTorch`, `PyTorch Lightning`, and `Weights and Biases`.
 - From the main directory, run (keeping in mind that there are more arguments that can be specified when running the python files than are listed):
-    - `python ./training/run_experiment --help` to learn more about how model training experiments can be conducted and configured depending on the use case.
+    - `python ./training/run_experiment.py --help` to learn more about how model training experiments can be conducted and configured depending on the use case.
     - `python training/sweep.py` to start a W&B hyperparameter optimization sweep.
     - `python app_gradio/app.py --flagging` to start a local Gradio app.
     - `python -c "from app_gradio.tests.test_app import test_local_run; test_local_run()"` to test the Gradio frontend by launching and pinging the frontend locally.

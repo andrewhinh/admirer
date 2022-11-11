@@ -35,8 +35,8 @@ question_id = 1005  # Random idx for inference
 # Other engines like text-curie-001 don't work from testing, can't intuit the task at hand
 engine = "text-davinci-002"
 # Significant driver of performance with little extra cost
-# PICa paper's max = 16, but setting = 32 when using text-davinci-002 b/c max # of tokens/request is higher
-n_shot = 32
+# PICa paper's max = 16, setting = 16 b/c setting = 32 causes # of tokens > max # of tokens/request allowed
+n_shot = 16
 # Signficant driver of cost with very little added benefit
 # PICa paper's max = 5, but setting = 3 according to paper's results that show little drop in performance
 # Note: it's possible to set > 5, since there's no limit to its #

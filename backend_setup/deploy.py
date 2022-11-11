@@ -63,6 +63,4 @@ proc = subprocess.run(
         "--image-uri",
         os.environ["IMAGE_URI"],
     ],
-    stdout=subprocess.PIPE,
-    text=True,
 )

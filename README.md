@@ -29,11 +29,11 @@ python3 app_gradio/app.py --flagging --model_url=https://joiajq6syp65ueonto4mswt
 ```
 3. Serve the Gradio app over a permanent localtunnel link:
 ```bash
-lt --port 11700 --subdomain admirer
+. ./backend_setup/localtunnel.sh
 ```
 4. Implement continual development by updating the AWS Lambda backend when signaled by a pushed commit to the repo and checking if the BERTScore computed F1 score of the pipeline has improved:
 ```bash
-. ./backend_setup/deploy.sh
+. ./backend_setup/cont_deploy.sh
 ```
 
 # Development

@@ -56,7 +56,7 @@ aws configure
 5. Sign up for a Weights and Biases account [here](https://wandb.ai/signup) and download the models and context examples locally:
 ```bash
 wandb login
-python ./training/stage_model.py --fetch --from_project admirer.
+python ./training/stage_model.py --fetch --from_project admirer
 ```
 ## Repository Structure
 The repo is separated into main folders that each describe a part of the ML-project lifecycle, some of which contain notebooks that allow for interaction with these components, and supporting files and folders that storing configurations and workflow scripts:

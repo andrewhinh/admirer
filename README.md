@@ -5,6 +5,7 @@
 - [The Transformees](#the-transformees)
 - [Description](#description)
     - [Inference Pipeline](#inference-pipeline)
+    - [Usage](#usage)
 - [Production](#production)
 - [Development](#development)
     - [Setup](#setup)
@@ -23,6 +24,12 @@
 ## Inference Pipeline
 <img width="1095" alt="Screenshot_2022-11-11_at_19 10 17" src="https://user-images.githubusercontent.com/40700820/202542190-d878937c-3095-4ed5-a0ea-3d109f61fe80.png">
 The visual question-answering pipeline is inspired by a paper from Microsoft; in short, we prompt GPT-3 with a generated image caption and object tag list, the question-answer pair, and context examples that demonstrate the task at hand in a few-shot learning method, achieving a [BERTScore](https://torchmetrics.readthedocs.io/en/stable/text/bert_score.html) computed F1 score of around .989 on the test set.
+
+## Usage
+As a direct consequence of not feeding the image data directly to GPT-3, the queries that work best involve asking descriptive, counting, or similar questions about one or more objects that are visible in the background. For example, if there are two people in the image, one wearing a hat and the other wearing glasses, questions that would work well could include the following:
+- "How many people are in the room?"
+- "What color is the hat in the picture?"
+- "How many people are wearing glasses?"
 
 # Production
 To setup the production server for the website in an AWS EC2 instance, we do the following steps:

@@ -19,7 +19,7 @@
 
 # Description
 - A full-stack ML-powered website that utilizes users’ webcam feeds to answer open-ended questions requiring outside knowledge.
-- The MVP of the website was built by Andrew Hinh as a [top-25 final project](https://bit.ly/3h8CqlX) for the [FSDL 2022 course](https://bit.ly/3NYNf6v) in which only the deployment code was written. The project was continued by [The Transformees](#the-transformees) and won the `Most Promising Entry` prize for the [ZenML Month of MLOps Competition](https://bit.ly/3EmoCxv) in the [closing ceremony](https://bit.ly/3tsDi7V). The data management, model development, testing, and continual learning scripts were additionally developed in the alloted time.
+- The MVP of the website was built by Andrew Hinh as a [top-25 final project](https://bit.ly/3h8CqlX) for the [FSDL 2022 course](https://bit.ly/3NYNf6v) in which only the deployment code was written. The project was continued by [The Transformees](#the-transformees) and won the `Most Promising Entry` prize for the [ZenML Month of MLOps Competition](https://bit.ly/3EmoCxv) in the [closing ceremony](https://bit.ly/3tsDi7V). The data management, model development, testing, and continual learning scripts were additionally developed in the allotted time.
 
 ## Inference Pipeline
 <img width="1095" alt="Screenshot_2022-11-11_at_19 10 17" src="https://user-images.githubusercontent.com/40700820/202542190-d878937c-3095-4ed5-a0ea-3d109f61fe80.png">
@@ -71,7 +71,7 @@ wandb login
 python ./training/stage_model.py --fetch --from_project admirer
 ```
 ## Repository Structure
-The repo is separated into main folders that each describe a part of the ML-project lifecycle, some of which contain notebooks that allow for interaction with these components, and supporting files and folders that storing configurations and workflow scripts:
+The repo is separated into main folders that each describe a part of the ML-project lifecycle, some of which contain notebooks that allow for interaction with these components, and supporting files and folders that store configurations and workflow scripts:
 ```bash
 .
 ├── api_serverless  # the backend handler code using AWS Lambda.
@@ -115,5 +115,5 @@ python -c "from app_gradio.tests.test_app import test_local_run; test_local_run(
 - GI4E for their [database](https://www.unavarra.es/gi4e/databases/gi4e/?languageId=1) and [Scale AI](https://scale.com/) for their annotations.
 - Facebook for their [image segmentation model](https://huggingface.co/facebook/detr-resnet-50-panoptic).
 - NLP Connect for their [base image caption model](https://huggingface.co/nlpconnect/vit-gpt2-image-captioning) and Sachin Abeywardana for his [fine-tuning code](https://sachinruk.github.io/blog/pytorch/huggingface/2021/12/28/vit-to-gpt2-encoder-decoder-model.html).
-- OpenAI for their [CLIP text and image encoder code](https://huggingface.co/openai/clip-vit-base-patch16) and their [GPT-3 API](https://openai.com/api/).
+- OpenAI for their [CLIP text and image encoder code](https://huggingface.co/openai/clip-vit-base-patch16) and [GPT-3 API](https://openai.com/api/).
 - Microsoft for their [visual question answering code](https://github.com/microsoft/PICa).

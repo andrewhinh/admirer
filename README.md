@@ -23,6 +23,7 @@
 
 ## Inference Pipeline
 <img width="1095" alt="Screenshot_2022-11-11_at_19 10 17" src="https://user-images.githubusercontent.com/40700820/202542190-d878937c-3095-4ed5-a0ea-3d109f61fe80.png">
+
 The visual question-answering pipeline is inspired by a paper from Microsoft; in short, we prompt GPT-3 with a generated image caption and object tag list, the question-answer pair, and context examples that demonstrate the task at hand in a few-shot learning method, achieving a [BERTScore](https://torchmetrics.readthedocs.io/en/stable/text/bert_score.html) computed F1 score of around .989 on the test set.
 
 ## Usage

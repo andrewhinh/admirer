@@ -19,15 +19,15 @@
 
 # Description
 - A full-stack ML-powered website that utilizes users’ webcam feeds to answer open-ended questions requiring outside knowledge.
-- The MVP of the website was built by Andrew Hinh as a [top-25 final project](https://bit.ly/3h8CqlX) for the [FSDL 2022 course](https://bit.ly/3NYNf6v) in which only the deployment code was written. The project was continued by [The Transformees](#the-transformees) and won the `Most Promising Entry` prize for the [ZenML Month of MLOps Competition](https://bit.ly/3EmoCxv) in the [closing ceremony](https://bit.ly/3tsDi7V). The data management, model development, testing, and continual learning scripts were additionally developed in the allotted time.
+- Andrew built the MVP of the website as a [top-25 final project](https://bit.ly/3h8CqlX) for the [FSDL 2022 course](https://bit.ly/3NYNf6v), writing only the deployment code. [The Transformees](#the-transformees) continued the project for the [ZenML Month of MLOps Competition](https://bit.ly/3EmoCxv) and won the `Most Promising Entry` prize in the [closing ceremony](https://bit.ly/3tsDi7V). We wrote the data management, model development, testing, and continual learning scripts in the allotted time.
 
 ## Inference Pipeline
 ![Screenshot_2022-11-18_at_11 17 22](https://user-images.githubusercontent.com/40700820/202741457-ef306fd8-27c6-47ed-89bb-913bb44bd312.png)
 
-The visual question-answering pipeline is inspired by a paper from Microsoft; in short, we prompt GPT-3 with a generated image caption and object tag list, the question-answer pair, and context examples that demonstrate the task at hand in a few-shot learning method, achieving a [BERTScore](https://torchmetrics.readthedocs.io/en/stable/text/bert_score.html) computed F1 score of around .989 on the test set.
+The visual question-answering pipeline is inspired by the paper from Microsoft linked in the [credit section](#credit). In short, we prompt GPT-3 with a generated image caption and object tag list, the question-answer pair, and context examples that demonstrate the task at hand in a few-shot learning method, achieving a [BERTScore](https://torchmetrics.readthedocs.io/en/stable/text/bert_score.html) computed F1 score of around .989 on the test set.
 
 ## Usage
-As a direct consequence of not feeding the image data directly to GPT-3, the queries that work best involve asking descriptive, counting, or similar questions about one or more objects that are visible in the background. For example, if there are two people in the image, one wearing a hat and the other wearing glasses, questions that would work well could include:
+As a direct consequence of not feeding the image data directly to GPT-3, the best queries involve asking descriptive, counting, or similar questions about one or more objects visible in the background. For example, if there are two people in the image, one wearing a hat and the other wearing glasses, questions that would work well could include the following:
 - "How many people are in the room?"
 - "What color is the hat in the picture?"
 - "How many people are wearing glasses?"
@@ -71,7 +71,7 @@ wandb login
 python ./training/stage_model.py --fetch --from_project admirer
 ```
 ## Repository Structure
-The repo is separated into main folders that each describe a part of the ML-project lifecycle, some of which contain notebooks that allow for interaction with these components, and supporting files and folders that store configurations and workflow scripts:
+The repo is separated into main folders that each describe a part of the ML-project lifecycle, some of which contain interactive notebooks, and supporting files and folders that store configurations and workflow scripts:
 ```bash
 .
 ├── api_serverless  # the backend handler code using AWS Lambda.

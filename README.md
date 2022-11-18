@@ -27,13 +27,13 @@
 The visual question-answering pipeline is inspired by a paper from Microsoft; in short, we prompt GPT-3 with a generated image caption and object tag list, the question-answer pair, and context examples that demonstrate the task at hand in a few-shot learning method, achieving a [BERTScore](https://torchmetrics.readthedocs.io/en/stable/text/bert_score.html) computed F1 score of around .989 on the test set.
 
 ## Usage
-As a direct consequence of not feeding the image data directly to GPT-3, the queries that work best involve asking descriptive, counting, or similar questions about one or more objects that are visible in the background. For example, if there are two people in the image, one wearing a hat and the other wearing glasses, questions that would work well could include the following:
+As a direct consequence of not feeding the image data directly to GPT-3, the queries that work best involve asking descriptive, counting, or similar questions about one or more objects that are visible in the background. For example, if there are two people in the image, one wearing a hat and the other wearing glasses, questions that would work well could include:
 - "How many people are in the room?"
 - "What color is the hat in the picture?"
 - "How many people are wearing glasses?"
 
 # Production
-To setup the production server for the website in an AWS EC2 instance, we do the following steps:
+To setup the production server for the website in an AWS EC2 instance, we:
 1. Setup the instance: install packages such as `pip`, pull the repo, and install the environment requirements:
 2. Setup the Gradio app with an AWS Lambda backend:
 ```bash
@@ -50,7 +50,7 @@ python3 app_gradio/app.py --flagging --model_url=https://joiajq6syp65ueonto4mswt
 
 # Development
 ## Setup
-1. Follow the steps listed [here](https://github.com/full-stack-deep-learning/fsdl-text-recognizer-2022-labs/tree/main/setup#local), replacing the corresponding commands with the following:
+1. Follow the steps listed [here](https://github.com/full-stack-deep-learning/fsdl-text-recognizer-2022-labs/tree/main/setup#local), replacing the corresponding commands with:
 ```bash
 git clone https://github.com/andrewhinh/admirer.git
 cd admirer

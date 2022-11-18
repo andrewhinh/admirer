@@ -12,7 +12,7 @@ As a direct consequence of not feeding the image data directly to GPT-3, the bes
 - "How many people are wearing glasses?"
 
 ## How does it work?
-<img width="1095" alt="Screenshot_2022-11-11_at_19 10 17" src="https://user-images.githubusercontent.com/40700820/202542190-d878937c-3095-4ed5-a0ea-3d109f61fe80.png">
+![Screenshot_2022-11-18_at_11 17 22](https://user-images.githubusercontent.com/40700820/202741457-ef306fd8-27c6-47ed-89bb-913bb44bd312.png)
 
 The visual question-answering pipeline is inspired by [this paper](https://github.com/microsoft/PICa) from Microsoft; in short, we prompt GPT-3 with a generated image caption and object tag list, the question-answer pair, and context examples that demonstrate the task at hand in a few-shot learning method as shown in the diagram above. As a result, we achieve a [BERTScore](https://torchmetrics.readthedocs.io/en/stable/text/bert_score.html) computed F1 score of around .989 on a test set we selected at random.
 
@@ -47,8 +47,8 @@ python3 app_gradio/app.py --flagging --model_url=https://joiajq6syp65ueonto4mswt
 . ./backend_setup/cont_deploy.sh
 ```
 
-## For more information
-If you’re interested in reading more about our development setup and process, check out the repo’s README [here](https://github.com/andrewhinh/admirer#readme).
+## Let's connect!
+If you’re interested in reading more about our development setup and process, check out the repo’s README [here](https://github.com/andrewhinh/admirer#readme). To reach out to us, you can head over to Andrew's [LinkedIn](https://www.linkedin.com/in/andrew-hinh/) or [GitHub](https://github.com/andrewhinh) and Alek's [LinkedIn](https://www.linkedin.com/in/hiidenhovi/?originalSubdomain=fi) or [GitHub](https://github.com/alekshiidenhovi).
 
 ## Show some love!
 If you found our work interesting, please head over to [the repo](https://github.com/andrewhinh/admirer) and give us a star! Thanks for reading!

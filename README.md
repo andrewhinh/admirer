@@ -22,7 +22,7 @@
 - The MVP of the website was built by Andrew Hinh as a [top-25 final project](https://bit.ly/3h8CqlX) for the [FSDL 2022 course](https://bit.ly/3NYNf6v) in which only the deployment code was written. The project was continued by [The Transformees](#the-transformees) and won the `Most Promising Entry` prize for the [ZenML Month of MLOps Competition](https://bit.ly/3EmoCxv) in the [closing ceremony](https://bit.ly/3tsDi7V). The data management, model development, testing, and continual learning scripts were additionally developed in the allotted time.
 
 ## Inference Pipeline
-<img width="1095" alt="Screenshot_2022-11-11_at_19 10 17" src="https://user-images.githubusercontent.com/40700820/202542190-d878937c-3095-4ed5-a0ea-3d109f61fe80.png">
+![Screenshot_2022-11-18_at_11 17 22](https://user-images.githubusercontent.com/40700820/202741457-ef306fd8-27c6-47ed-89bb-913bb44bd312.png)
 
 The visual question-answering pipeline is inspired by a paper from Microsoft; in short, we prompt GPT-3 with a generated image caption and object tag list, the question-answer pair, and context examples that demonstrate the task at hand in a few-shot learning method, achieving a [BERTScore](https://torchmetrics.readthedocs.io/en/stable/text/bert_score.html) computed F1 score of around .989 on the test set.
 

@@ -14,7 +14,7 @@ As a direct consequence of not feeding the image data directly to GPT-3, the bes
 ## How does it work?
 ![Screenshot_2022-11-18_at_11 17 22](https://user-images.githubusercontent.com/40700820/202741457-ef306fd8-27c6-47ed-89bb-913bb44bd312.png)
 
-The visual question-answering pipeline is inspired by [this paper](https://github.com/microsoft/PICa) from Microsoft. In short, we prompt GPT-3 with a generated image caption and object tag list, the question-answer pair, and context examples that demonstrate the task at hand in a few-shot learning method as shown in the diagram above. As a result, we achieve a [BERTScore](https://torchmetrics.readthedocs.io/en/stable/text/bert_score.html) computed F1 score of around .989 on a test set we selected at random.
+The visual question-answering pipeline is inspired by [this paper](https://github.com/microsoft/PICa) from Microsoft. In short, we prompt GPT-3 with a generated image caption and object tag list, the question-answer pair, and context examples that demonstrate the task at hand in a few-shot learning method as shown in the diagram above. As a result, we achieve a [BERTScore](http://bit.ly/3tM1mmc) computed F1 score of around .989 on a test set we selected at random.
 
 ## Repo Structure
 The [repo](https://github.com/andrewhinh/admirer) is separated into main folders that each describe a part of the ML-project lifecycle, some of which contain interactive notebooks, and supporting files and folders that store configurations and workflow scripts:

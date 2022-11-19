@@ -24,7 +24,7 @@
 ## Inference Pipeline
 ![Screenshot_2022-11-18_at_11 17 22](https://user-images.githubusercontent.com/40700820/202741457-ef306fd8-27c6-47ed-89bb-913bb44bd312.png)
 
-The visual question-answering pipeline is inspired by the paper from Microsoft linked in the [credit section](#credit). In short, we prompt GPT-3 with a generated image caption and object tag list, the question-answer pair, and context examples that demonstrate the task at hand in a few-shot learning method, achieving a [BERTScore](https://torchmetrics.readthedocs.io/en/stable/text/bert_score.html) computed F1 score of around .989 on the test set.
+The visual question-answering pipeline is inspired by the paper from Microsoft linked in the [credit section](#credit). In short, we prompt GPT-3 with a generated image caption and object tag list, the question-answer pair, and context examples that demonstrate the task at hand in a few-shot learning method, achieving a [BERTScore](http://bit.ly/3tM1mmc) computed F1 score of around .989 on the test set.
 
 ## Usage
 As a direct consequence of not feeding the image data directly to GPT-3, the best queries involve asking descriptive, counting, or similar questions about one or more objects visible in the background. For example, if there are two people in the image, one wearing a hat and the other wearing glasses, questions that would work well could include the following:

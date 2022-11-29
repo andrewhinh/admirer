@@ -33,7 +33,7 @@ artifact_path = Path(__file__).resolve().parent / "artifacts" / "answer"
 img_id = 100  # Random idx for inference
 question_id = 1005  # Random idx for inference
 # Other engines like text-curie-001 don't work from testing, can't intuit the task at hand
-engine = "text-davinci-002"
+engine = "text-davinci-003"
 # Significant driver of performance with little extra cost
 # PICa paper's max = 16, setting = 16 b/c setting = 32 causes # of tokens > max # of tokens/request allowed
 n_shot = 16

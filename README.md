@@ -92,7 +92,8 @@ python ./training/run_experiment.py --help
 ```
 - To start a W&B hyperparameter optimization sweep:
 ```bash
-python training/sweep.py
+. ./training/sweep.sh
+CUDA_VISIBLE_DEVICES=0 wandb agent --project ${PROJECT} --entity ${ENTITY} ${SWEEP_ID}
 ```
 - To start the Gradio app locally:
 ```bash

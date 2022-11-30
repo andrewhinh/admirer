@@ -69,7 +69,7 @@ class GPT2(pl.LightningModule):
         parser.add_argument("--one_cycle_total_steps", type=int, default=ONE_CYCLE_TOTAL_STEPS)
 
         parser.add_argument("--top_k", type=int, default=TOP_K)
-        parser.add_argument("--top_p", type=int, default=TOP_P)
+        parser.add_argument("--top_p", type=float, default=TOP_P)
         parser.add_argument("--max_label_length", type=int, default=MAX_LABEL_LENGTH)
         parser.add_argument("--label_mask", type=float, default=LABEL_MASK)
         return parser

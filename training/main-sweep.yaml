@@ -7,18 +7,13 @@ command:
     - ${interpreter}
     - ${program}
     - "--wandb"
-    - "--auto_select_gpus"                # GPU settings (Need > 1 GPU available)
-    - "--strategy"
-    - "ddp_find_unused_parameters_false"
-    - "--auto_lr_find"                    # Experiment setup
-    - "--auto_scale_batch_size"
-    - "--limit_test_batches"
+    - "--limit_test_batches" # Experiment setup
     - "0"
     - "--log_every_n_steps"
     - "50"
     - "--max_epochs"
     - "100"
-    - "augment_data"                      # First thing to check if training errors occur
+    - "--augment_data" # First things to check if training errors occur
     - "True"
     - "--precision"
     - "16"
@@ -32,6 +27,11 @@ metric:
     name: train/loss
     goal: minimize
 parameters:
+    batch_size:
+        values: [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]
+    one_cycle_max_lr:
+        max: 1.0
+        min: 0.000001
     top_k:
         max: 1000
         min: 1
@@ -42,6 +42,8 @@ parameters:
         max: 100
         min: 1
     # we can also fix some values, just like we set default arguments
+    gpus:
+        value: 1
     model_class:
         value: ViT2GPT2
     data_class:

@@ -37,12 +37,11 @@ OUTPUT=$(echo "$OUTPUT" | cut -d' ' -f3 | sed -n '2p')
 OUTPUT=$(python training/process_setup_output.py --url "$OUTPUT")
 ENTITY="$(echo "$OUTPUT" | cut -d' ' -f1)"
 SWEEP_ID="$(echo "$OUTPUT" | cut -d' ' -f2)"
-echo "$PROJECT"
-echo "$ENTITY"
-echo "$SWEEP_ID"
 
+# Exporting variables for get access in tmux
+export PROJECT="$PROJECT"
+export ENTITY="$ENTITY"
+export SWEEP_ID="$SWEEP_ID"
 
-# Set the environment variables using:
-# export PROJECT=${PROJECT}; export ENTITY=${ENTITY}; export SWEEP_ID=${SWEEP_ID}
 # Start a tmux and for every GPU, change GPU_IDX accordingly, create a new window, and run:
 # CUDA_VISIBLE_DEVICES=GPU_IDX wandb agent --project ${PROJECT} --entity ${ENTITY} ${SWEEP_ID}

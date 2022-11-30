@@ -5,5 +5,7 @@
 
  "extensions": [
     "ms-python.python"
-  ]
+  ],
+
+  "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}"
 }

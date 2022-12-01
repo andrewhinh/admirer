@@ -97,7 +97,7 @@ python ./training/run_experiment.py \
 --data_class PICa --model_class ViT2GPT2 --gpus "-1" --limit_test_batches 0 \
 --wandb --log_every_n_steps 25 --max_epochs 1000 \
 --augment_data True --num_workers "$(nproc)" \
---batch_size 2 --one_cycle_max_lr 0.08594 --top_k 169 --top_p 0.7849 --max_label_length 86
+--batch_size 2 --one_cycle_max_lr 0.11 --top_k 780 --top_p 0.65 --max_label_length 50
 ```
 - To start the Gradio app locally:
 ```bash

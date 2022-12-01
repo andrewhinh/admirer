@@ -4,7 +4,7 @@ echo "Getting entity and sweep ID"
 
 # Setting default values
 DEFAULT_PROJECT="admirer-training"
-DEFAULT_SWEEP_CONFIG="training/main-sweep.yaml"
+DEFAULT_SWEEP_CONFIG="training/sweep/main-sweep.yaml"
 
 
 # Getting arguments through flags
@@ -32,9 +32,9 @@ fi
 
 
 # Getting entity and sweep ID
-OUTPUT=$(python training/sweep_setup.py --project "$PROJECT" --config "$SWEEP_CONFIG")
+OUTPUT=$(python training/sweep/sweep_setup.py --project "$PROJECT" --config "$SWEEP_CONFIG")
 OUTPUT=$(echo "$OUTPUT" | cut -d' ' -f3 | sed -n '2p')
-OUTPUT=$(python training/process_setup_output.py --url "$OUTPUT")
+OUTPUT=$(python training/sweep/process_setup_output.py --url "$OUTPUT")
 ENTITY="$(echo "$OUTPUT" | cut -d' ' -f1)"
 SWEEP_ID="$(echo "$OUTPUT" | cut -d' ' -f2)"
 

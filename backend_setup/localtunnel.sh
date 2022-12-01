@@ -1,5 +1,8 @@
 #!/bin/bash
-until lt --port 11700 --subdomain admirer
+while true
 do
-  echo "Try again"
+  until lt --port 11700 --subdomain admirer
+  do
+    echo "Try again"
+  done
 done

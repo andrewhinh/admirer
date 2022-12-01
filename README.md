@@ -99,6 +99,12 @@ python ./training/run_experiment.py \
 --augment_data True --num_workers "$(nproc)" \
 --batch_size 2 --one_cycle_max_lr 0.01 --top_k 780 --top_p 0.65 --max_label_length 50
 ```
+- To test the model (best model can be downloaded from [here](https://wandb.ai/admirer/admirer-training/artifacts/model/model-2vgqajre/v4/files)):
+```bash
+python ./training/test.py \
+--data_class PICa --model_class ViT2GPT2 \
+--num_workers "$(nproc)" --load_checkpoint training/model.pth
+```
 - To start the Gradio app locally:
 ```bash
 python app_gradio/app.py --flagging

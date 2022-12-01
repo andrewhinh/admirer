@@ -22,7 +22,7 @@ command:
 # and we specify which parameters to sweep over, what we're optimizing, and how we want to optimize it
 method: random  # generally, random searches perform well, can also be "grid" or "bayes"
 metric:
-    name: train/loss
+    name: validation/loss
     goal: minimize
 parameters:
     batch_size:

@@ -7,7 +7,11 @@ data/interim
 # Training/context data
 /data/downloaded/
 
+# Label Environment
 /data_manage/label-env/
+
+# Model Checkpoint
+/training/model.pth
 
 # Production files
 /question_answer/artifacts/answer/coco_annotations/

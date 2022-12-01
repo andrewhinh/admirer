@@ -46,7 +46,9 @@ class ImageToTextTableLogger(pl.Callback):
 
     def _log_image_text_table(self, trainer, output, batch, key):
         images, actual_sentences = batch
-        trainer = trainer.model
+        trainer = trainer.model  # For easy access to the model
+        if hasattr(trainer, "module"):  # For DDP
+            trainer = trainer.module.module
         encoder_outputs = trainer.model.encoder(pixel_values=images.to(trainer.device))
         generated_sentences = generate_sentence_from_image(
             trainer.model,

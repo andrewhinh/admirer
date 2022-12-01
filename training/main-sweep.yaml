@@ -15,8 +15,6 @@ command:
     - "100"
     - "--augment_data" # First things to check if training errors occur
     - "True"
-    - "--precision"
-    - "16"
     - "--num_workers"
     - "1"
     - ${args}  # these arguments come from the sweep parameters below

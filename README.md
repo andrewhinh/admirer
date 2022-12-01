@@ -91,11 +91,11 @@ From the main directory, there are various ways to test the pipeline:
 . ./training/sweep.sh
 CUDA_VISIBLE_DEVICES=0 wandb agent --project ${PROJECT} --entity ${ENTITY} ${SWEEP_ID}
 ```
-- To train the model (add `--strategy ddp_find_unused_parameters_false` for multi-GPU machines; takes ~ 8 hrs on a 8xA100 Lambda Labs instance):
+- To train the model (add `--strategy ddp_find_unused_parameters_false` for multi-GPU machines; takes ~8 hrs on an 8xA100 Lambda Labs instance):
 ```bash
 python ./training/run_experiment.py \
 --data_class PICa --model_class ViT2GPT2 --gpus "-1" \
---wandb --log_every_n_steps 25 --max_epochs 100 \
+--wandb --log_every_n_steps 25 --max_epochs 300 \
 --augment_data True --num_workers "$(nproc)" \
 --batch_size 2 --one_cycle_max_lr 0.11 --top_k 780 --top_p 0.65 --max_label_length 50
 ```

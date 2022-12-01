@@ -86,14 +86,18 @@ The repo is separated into main folders that each describe a part of the ML-proj
 ```
 ## Testing
 From the main directory, there are various ways to test the pipeline:
-- To learn more about how model training experiments can be conducted and configured depending on the use case:
-```bash
-python ./training/run_experiment.py --help
-```
-- To start a W&B hyperparameter optimization sweep:
+- To start a W&B hyperparameter optimization sweep (on one GPU):
 ```bash
 . ./training/sweep.sh
 CUDA_VISIBLE_DEVICES=0 wandb agent --project ${PROJECT} --entity ${ENTITY} ${SWEEP_ID}
+```
+- To train the model (adding `--strategy ddp_find_unused_parameters_false` for multi-GPU machines):
+```bash
+python ./training/run_experiment.py \
+--data_class PICa --model_class ViT2GPT2 --gpus "-1" --limit_test_batches 0 \
+--wandb --log_every_n_steps 25 --max_epochs 1000 \
+--augment_data True --num_workers "$(nproc)" \
+--batch_size 2 --one_cycle_max_lr 0.08594 --top_k 169 --top_p 0.7849 --max_label_length 86
 ```
 - To start the Gradio app locally:
 ```bash

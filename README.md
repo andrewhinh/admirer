@@ -88,7 +88,7 @@ The repo is separated into main folders that each describe a part of the ML-proj
 From the main directory, there are various ways to test the pipeline:
 - To start a W&B hyperparameter optimization sweep for the caption model (on one GPU):
 ```bash
-. ./training/sweep.sh
+. ./training/sweep/sweep.sh
 CUDA_VISIBLE_DEVICES=0 wandb agent --project ${PROJECT} --entity ${ENTITY} ${SWEEP_ID}
 ```
 - To train the caption model (add `--strategy ddp_find_unused_parameters_false` for multi-GPU machines; takes ~7.5 hrs on an 8xA100 Lambda Labs instance):

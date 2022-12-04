@@ -3,3 +3,4 @@ from .optim import LearningRateMonitor
 
 from . import imtotext
 from .imtotext import ImageToTextTableLogger as ImageToTextLogger
+from .imtotext import ImageToTextPrintLogger

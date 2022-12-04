@@ -55,7 +55,6 @@ num_beams = 4
 
 # Caption model config
 caption_model = transformers_path / "nlpconnect" / "vit-gpt2-image-captioning"
-# caption_model = transformers_path / "trained_caption" / "model.pt"
 
 # CLIP Encoders config
 clip_processor = transformers_path / "openai" / "clip-vit-base-patch16"

@@ -5,6 +5,7 @@ import numpy as np
 import pytorch_lightning as pl
 import torch
 
+from question_answer import callbacks as cb
 from question_answer import lit_models
 from training.util import DATA_CLASS_MODULE, import_class, MODEL_CLASS_MODULE, setup_data_and_model_from_args
 
@@ -109,7 +110,9 @@ def main():
         args.load_checkpoint, args=args, model=model.vit2gpt2, tokenizer=model.gpt2_tokenizer
     )
 
-    trainer = pl.Trainer.from_argparse_args(args)
+    callbacks = [cb.ImageToTextPrintLogger()]
+
+    trainer = pl.Trainer.from_argparse_args(args, callbacks=callbacks)
     profiler = pl.profiler.PassThroughProfiler()
     trainer.profiler = profiler
 

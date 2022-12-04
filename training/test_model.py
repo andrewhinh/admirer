@@ -27,18 +27,6 @@ def _setup_parser():
 
     # Basic arguments
     parser.add_argument(
-        "--wandb",
-        action="store_true",
-        default=False,
-        help="If passed, logs experiment results to Weights & Biases. Otherwise logs only to local Tensorboard.",
-    )
-    parser.add_argument(
-        "--profile",
-        action="store_true",
-        default=False,
-        help="If passed, uses the PyTorch Profiler to track computation, exported as a Chrome-style trace.",
-    )
-    parser.add_argument(
         "--data_class",
         type=str,
         default="PICa",
@@ -50,9 +38,7 @@ def _setup_parser():
         default="ViT2GPT2",
         help=f"String identifier for the model class, relative to {MODEL_CLASS_MODULE}.",
     )
-    parser.add_argument(
-        "--load_checkpoint", type=str, default=None, help="If passed, loads a model from the provided path."
-    )
+    parser.add_argument("--load_checkpoint", type=str, default=None, help="Loads a model from the provided path.")
     parser.add_argument(
         "--stop_early",
         type=int,
@@ -82,28 +68,12 @@ def _setup_parser():
 
 def main():
     """
-    Run an experiment.
-
-    Sample command:
-    ```
-    python training/run_experiment.py --max_epochs=3 --gpus='0,' --num_workers=20 --model_class=MLP --data_class=MNIST
-    ```
-
-    For basic help documentation, run the command
-    ```
-    python training/run_experiment.py --help
-    ```
-
-    The available command line args differ depending on some of the arguments, including --model_class and --data_class.
-
-    To see which command line args are available and read their documentation, provide values for those arguments
-    before invoking --help, like so:
-    ```
-    python training/run_experiment.py --model_class=MLP --data_class=MNIST --help
+    Test a GPT2-decoder model on the PICa test dataset.
     """
     parser = _setup_parser()
     args = parser.parse_args()
     data, model = setup_data_and_model_from_args(args)
+    assert args.load_checkpoint, "Need to provide a model checkpoint to test."
 
     lit_model_class = lit_models.GPT2
     lit_model = lit_model_class.load_from_checkpoint(

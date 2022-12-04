@@ -101,7 +101,7 @@ python ./training/run_experiment.py \
 ```
 - To test the caption model (best model can be downloaded from [here](https://wandb.ai/admirer/admirer-training/artifacts/model/model-2vgqajre/v4/files)):
 ```bash
-python ./training/test.py \
+python ./training/test_model.py \
 --data_class PICa --model_class ViT2GPT2 \
 --num_workers "$(nproc)" --load_checkpoint training/model.pth
 ```

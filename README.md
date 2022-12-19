@@ -1,5 +1,5 @@
 # [admirer](https://admirer.loca.lt/)
-![demo](./demo.png)
+![demo](./zenml_blog/demo.png)
 
 # Contents
 - [The Transformees](#the-transformees)
@@ -22,7 +22,7 @@
 - Andrew built the MVP of the website as a [top-25 final project](https://bit.ly/3h8CqlX) for the [FSDL 2022 course](https://bit.ly/3NYNf6v), writing only the deployment code. [The Transformees](#the-transformees) continued the project for the [ZenML Month of MLOps Competition](https://bit.ly/3EmoCxv) and won the `Most Promising Entry` prize in the [closing ceremony](https://bit.ly/3tsDi7V). We wrote the data management, model development, testing, and continual learning scripts in the allotted time.
 
 ## Inference Pipeline
-![Screenshot_2022-11-18_at_11 17 22](https://user-images.githubusercontent.com/40700820/202741457-ef306fd8-27c6-47ed-89bb-913bb44bd312.png)
+![inference-pipeline](./zenml_blog/inference-pipeline.png)
 
 The visual question-answering pipeline is inspired by the paper from Microsoft linked in the [credit section](#credit). In short, we prompt GPT-3 with a generated image caption and object tag list, the question-answer pair, and context examples that demonstrate the task at hand in a few-shot learning method, achieving a [BERTScore](http://bit.ly/3tM1mmc) computed F1 score of around .989 on the test set.
 

@@ -51,7 +51,8 @@ python3 app_gradio/app.py --flagging --model_url=https://joiajq6syp65ueonto4mswt
 # Development
 ## Setup
 ### Note
-If the instructions aren't working for you, head to [this Google Colab](https://colab.research.google.com/drive/1Z34DLHJm1i1e1tnknICujfZC6IaToU3k?usp=sharing), make a copy of it, and run the cells there to get an environment set up.
+- If the instructions aren't working for you, head to [this Google Colab](https://colab.research.google.com/drive/1Z34DLHJm1i1e1tnknICujfZC6IaToU3k?usp=sharing), make a copy of it, and run the cells there to get an environment set up.
+- To join the Notion team, head [here](https://www.notion.so/invite/534f724c603a6f977796cc189491ed3fd6b03e82).
 ### Steps
 1. Set up the conda environment locally, referring to the instructions of the commented links as needed:
 ```bash

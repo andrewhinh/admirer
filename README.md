@@ -50,18 +50,26 @@ python3 app_gradio/app.py --flagging --model_url=https://joiajq6syp65ueonto4mswt
 
 # Development
 ## Setup
-1. Follow the steps listed [here](https://github.com/full-stack-deep-learning/fsdl-text-recognizer-2022-labs/tree/main/setup#local), replacing the corresponding commands with:
+### Note
+If the instructions aren't working for you, head to [this Google Colab](https://colab.research.google.com/drive/1Z34DLHJm1i1e1tnknICujfZC6IaToU3k?usp=sharing), make a copy of it, and run the cells there to get an environment set up.
+### Steps
+1. Set up the conda environment locally, referring to the instructions of the commented links as needed:
 ```bash
 git clone https://github.com/andrewhinh/admirer.git
 cd admirer
+# Install conda: https://conda.io/projects/conda/en/latest/user-guide/install/linux.html
+make conda-update
 conda activate admirer
+make pip-tools
+export PYTHONPATH=.
+echo "export PYTHONPATH=.:$PYTHONPATH" >> ~/.bashrc
+# If you're using a newer NVIDIA RTX GPU: 
+    # pip3 uninstall torch torchvision torchaudio -y
+    # Download the PyTorch version that is compatible with your machine: https://pytorch.org/get-started/locally/
 ```
-2. If you're using a newer NVIDIA RTX GPU, uninstall PyTorch and visit [here](https://pytorch.org/get-started/locally/) to download the PyTorch version that is compatible with your machine:
-```bash
-pip3 uninstall torch torchvision torchaudio -y
-```
-3. Sign up for OpenAI's API [here](https://openai.com/api/), populate a `.env` file with your OpenAI API key in the format of `.env.template`, and reactivate (just activate again) the environment.
-4. Sign up for an AWS account [here](https://us-west-2.console.aws.amazon.com/ecr/create-repository?region=us-west-2) and setup your AWS credentials locally, referring to [this](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-config) as needed:
+2. Sign up for an OpenAI account and get an API key [here](https://beta.openai.com/account/api-keys).
+3. Populate a `.env` file with your OpenAI API key in the format of `.env.template`, and reactivate the environment.
+4. Sign up for an AWS account [here](https://us-west-2.console.aws.amazon.com/ecr/create-repository?region=us-west-2) and set up your AWS credentials locally, referring to [this](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-config) as needed:
 ```bash
 aws configure
 ```

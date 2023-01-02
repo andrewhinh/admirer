@@ -33,17 +33,16 @@ As a direct consequence of not feeding the image data directly to GPT-3, the bes
 - "How many people are wearing glasses?"
 
 # Production
-To setup the production server for the website in an AWS EC2 instance, we:
-1. Setup the instance: install packages such as `pip`, pull the repo, and install the environment requirements:
-2. Setup the Gradio app with an AWS Lambda backend:
+To setup the production server for the website, we simply:
+1. Setup the Gradio app with an AWS Lambda backend:
 ```bash
 python3 app_gradio/app.py --flagging --model_url=https://joiajq6syp65ueonto4mswttzu0apfbi.lambda-url.us-west-1.on.aws/
 ```
-3. Serve the Gradio app over a permanent localtunnel link:
+2. Serve the Gradio app over a permanent localtunnel link:
 ```bash
 . ./backend_setup/localtunnel.sh
 ```
-4. Implement continual development by updating the AWS Lambda backend when signaled by a pushed commit to the repo and checking if the BERTScore computed F1 score of the pipeline has improved:
+3. Implement continual deployment by updating the AWS Lambda backend when signaled by a pushed commit to the repo and checking if the BERTScore computed F1 score of the pipeline has improved:
 ```bash
 . ./backend_setup/cont_deploy.sh
 ```

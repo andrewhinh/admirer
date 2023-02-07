@@ -16,11 +16,9 @@ do
 
             echo "$NEW_F1" >| "$CURRENT_F1_PATH"
 
-            AWS_REGION=$(aws configure get region)
-            AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account | sed 's/"//g')
-            aws --region "$AWS_REGION" ecr get-login-password | docker login --username AWS --password-stdin "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+            . ./utils/aws_login.sh
 
-            python3 ./backend_setup/deploy.py
+            python3 utils/build_docker.py --ecr_repo_name admirer-backend --update_lambda_func
         else
             echo "No improvement -> no updates made"
 

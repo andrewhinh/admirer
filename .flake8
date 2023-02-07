@@ -48,3 +48,4 @@ per-file-ignores =
   *training/sweep/sweep_setup.py:F841
   *load_test/locust_http_user.py:F841
   *backend_setup/deploy.py:S404,S607,S602,S603
+  *utils/build_docker.py:S404,S607,S603

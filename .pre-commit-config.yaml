@@ -27,7 +27,6 @@ repos:
     rev: 3.9.2
     hooks:
       - id: flake8
-        exclude: (lab01|lab02|lab03|lab04|lab06|lab07|lab08)
         additional_dependencies:
           [
             flake8-annotations,

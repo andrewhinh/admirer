@@ -54,13 +54,13 @@ To setup the production server for the website, we:
 2. Create a Docker image for the frontend and push to AWS ECR:
 
     ```bash
-    python utils/build_docker.py --dockerfile_path app_gradio/Dockerfile
+    python3 utils/build_docker.py --dockerfile_path app_gradio/Dockerfile
     ```
 
 3. Pull the frontend Docker image on an AWS EC2 instance:
 
     ```bash
-    python utils/build_docker.py --pull_image
+    python3 utils/build_docker.py --pull_image
     ```
 
 4. Run the Docker image:
@@ -119,7 +119,7 @@ To contribute, check out the [guide](./CONTRIBUTING.md).
 
     ```bash
     wandb login
-    python ./training/stage_model.py --fetch --from_project admirer
+    python3 ./training/stage_model.py --fetch --from_project admirer
     ```
 
 If the instructions aren't working for you, head to [this Google Colab](https://colab.research.google.com/drive/1Z34DLHJm1i1e1tnknICujfZC6IaToU3k?usp=sharing), make a copy of it, and run the cells there to get an environment set up.
@@ -155,7 +155,7 @@ CUDA_VISIBLE_DEVICES=0 wandb agent --project ${PROJECT} --entity ${ENTITY} ${SWE
 - To train the caption model (add `--strategy ddp_find_unused_parameters_false` for multi-GPU machines; takes ~7.5 hrs on an 8xA100 Lambda Labs instance):
 
 ```bash
-python ./training/run_experiment.py \
+python3 ./training/run_experiment.py \
 --data_class PICa --model_class ViT2GPT2 --gpus "-1" \
 --wandb --log_every_n_steps 25 --max_epochs 300 \
 --augment_data True --num_workers "$(nproc)" \
@@ -165,7 +165,7 @@ python ./training/run_experiment.py \
 - To test the caption model (best model can be downloaded from [here](https://wandb.ai/admirer/admirer-training/artifacts/model/model-2vgqajre/v4/files)):
 
 ```bash
-python ./training/test_model.py \
+python3 ./training/test_model.py \
 --data_class PICa --model_class ViT2GPT2 \
 --num_workers "$(nproc)" --load_checkpoint training/model.pth
 ```
@@ -173,13 +173,13 @@ python ./training/test_model.py \
 - To start the Gradio app locally:
 
 ```bash
-python app_gradio/app.py --flagging
+python3 app_gradio/app.py --flagging
 ```
 
 - To test the Gradio frontend by launching and pinging the frontend locally:
 
 ```bash
-python -c "from app_gradio.tests.test_app import test_local_run; test_local_run()"
+python3 -c "from app_gradio.tests.test_app import test_local_run; test_local_run()"
 ```
 
 - To test the caption model's ability to memorize a single batch:

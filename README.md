@@ -1,4 +1,4 @@
-# [admirer](https://admirer.loca.lt/)
+# [admirer](https://admirer.pagekite.me/)
 
 ![demo](./assets/demo.png)
 

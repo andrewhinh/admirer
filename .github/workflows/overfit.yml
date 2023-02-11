@@ -30,7 +30,7 @@ jobs:
           pip install --quiet -r requirements/prod.txt -r requirements/dev.txt
       - name: Run overfitting test
         run: |
-          ./training/tests/overfit.sh
+          ./training/tests/test_memorize_caption.sh
         env:
           PYTHONPATH: .
           WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}

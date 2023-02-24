@@ -16,6 +16,7 @@
     - [Setup](#setup)
     - [Repository Structure](#repository-structure)
     - [Testing](#testing)
+    - [Code Style](#code-style)
   - [Credit](#credit)
 
 ## The Transformees
@@ -89,7 +90,6 @@ To contribute, check out the [guide](./CONTRIBUTING.md).
 
 ### Setup
 
-
 1. Install conda if necessary:
 
     ```bash
@@ -109,13 +109,13 @@ To contribute, check out the [guide](./CONTRIBUTING.md).
     echo "export PYTHONPATH=.:$PYTHONPATH" >> ~/.bashrc
     ```
 
-3. Reinstall PyTorch if using a newer NVIDIA RTX GPU: 
+3. Reinstall PyTorch if using a newer NVIDIA RTX GPU:
 
     ```bash
     pip3 uninstall torch torchvision torchaudio -y
     # Download the PyTorch version that is compatible with your machine: https://pytorch.org/get-started/locally/
     ```
-    
+
 4. Install pre-commit:
 
     ```bash
@@ -223,7 +223,7 @@ From the main directory, there are various ways to test the pipeline:
     ```bash
     make lint
     ```
-    
+
 ## Credit
 
 - GI4E for their [database](https://www.unavarra.es/gi4e/databases/gi4e/?languageId=1) and [Scale AI](https://scale.com/) for their annotations.

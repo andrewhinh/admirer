@@ -27,6 +27,9 @@ data/interim
 
 # AWS EC2 SSH Key
 /admirer-key.pem
+
+# Hosting
+pagekite.py
 #ADDED###################################
 
 # Editors

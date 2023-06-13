@@ -293,12 +293,12 @@ timm==0.6.11
     # via -r requirements/prod.in
 tokenizers==0.12.1
     # via transformers
-torch==1.12.0+cpu
+https://download.pytorch.org/whl/cpu/torch-1.12.0%2Bcpu-cp39-cp39-linux_x86_64.whl
     # via
     #   -r requirements/prod.in
     #   timm
     #   torchvision
-torchvision==0.13.0+cpu
+https://download.pytorch.org/whl/cpu/torchvision-0.13.0%2Bcpu-cp39-cp39-linux_x86_64.whl
     # via
     #   -r requirements/prod.in
     #   timm

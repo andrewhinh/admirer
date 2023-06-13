@@ -1,1 +1,1 @@
-web: source setup.sh && python3 app_gradio/app.py --port "$GRADIO_SERVER_PORT" --flagging --model_url=https://joiajq6syp65ueonto4mswttzu0apfbi.lambda-url.us-west-1.on.aws/
+web: export GRADIO_SERVER_PORT="$PORT" && python3 app_gradio/app.py --port "$GRADIO_SERVER_PORT" --flagging --model_url=https://joiajq6syp65ueonto4mswttzu0apfbi.lambda-url.us-west-1.on.aws/

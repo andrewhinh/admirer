@@ -151,7 +151,7 @@ class PredictorBackend:
         )
 
         try:
-            response = requests.post(self.url, data=payload, headers=headers, timeout=30)  # seconds, imposed by Heroku
+            response = requests.post(self.url, data=payload, headers=headers, timeout=15)  # seconds, imposed by Heroku
             pred = response.json()["pred"]
         except requests.exceptions.Timeout:
             pred = "Sorry, the model took too long to respond. Please try again."

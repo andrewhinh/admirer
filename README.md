@@ -1,4 +1,4 @@
-# [admirer](https://admirer.pagekite.me/)
+# [admirer](https://admire.herokuapp.com/)
 
 ![demo](./assets/demo.png)
 

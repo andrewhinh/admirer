@@ -150,8 +150,11 @@ class PredictorBackend:
             {"image": "data:image/jpg;base64," + encoded_image, "question": "data:question/str;str," + question}
         )
 
-        response = requests.post(self.url, data=payload, headers=headers)
-        pred = response.json()["pred"]
+        try:
+            response = requests.post(self.url, data=payload, headers=headers, timeout=30)  # seconds, imposed by Heroku
+            pred = response.json()["pred"]
+        except requests.exceptions.Timeout:
+            pred = "Sorry, the model took too long to respond. Please try again."
 
         return pred
 

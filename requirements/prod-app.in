@@ -1,6 +1,0 @@
-requests
-smart_open[s3]
-# versioned for stability
-gradio==3.0.21
-# versioned to match Google Colab up to minor
-pillow<7.2

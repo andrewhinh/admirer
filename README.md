@@ -1,4 +1,4 @@
-# [admirer](https://admire.herokuapp.com/)
+# admirer
 
 ![demo](./assets/demo.png)
 

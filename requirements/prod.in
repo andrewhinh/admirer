@@ -7,7 +7,7 @@ requests
 smart_open[s3]
 tqdm
 # versioned for stability
-gradio==3.0.21
+gradio==3.34.0
 # versioned to match Google Colab up to minor
 Jinja2>=2.11,<2.12
 pillow<7.2

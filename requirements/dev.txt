@@ -38,10 +38,6 @@ async-timeout==4.0.2
     # via
     #   -c requirements/prod.txt
     #   aiohttp
-asynctest==0.13.0
-    # via
-    #   -c requirements/prod.txt
-    #   aiohttp
 attrs==20.3.0
     # via
     #   -c requirements/prod.txt
@@ -55,10 +51,6 @@ backoff==1.10.0
     # via
     #   -c requirements/prod.txt
     #   analytics-python
-backports.zoneinfo==0.2.1
-    # via
-    #   pytz-deprecation-shim
-    #   tzlocal
 bcrypt==3.2.2
     # via
     #   -c requirements/prod.txt
@@ -213,17 +205,8 @@ idna==3.3
 importlib-metadata==4.11.3
     # via
     #   -c requirements/prod.txt
-    #   click
     #   great-expectations
-    #   jsonschema
     #   markdown
-    #   pluggy
-    #   pre-commit
-    #   pytest
-    #   sqlalchemy
-    #   virtualenv
-importlib-resources==5.9.0
-    # via jsonschema
 iniconfig==1.1.1
     # via pytest
 ipykernel==4.10.1
@@ -421,7 +404,7 @@ pexpect==4.8.0
     # via ipython
 pickleshare==0.7.5
     # via ipython
-pillow==7.1.2
+pillow==10.0.1
     # via
     #   -c requirements/prod.txt
     #   matplotlib
@@ -567,10 +550,10 @@ rsa==4.8
     # via
     #   google-auth
     #   oauth2client
-ruamel.yaml==0.17.17
+ruamel-yaml==0.17.17
     # via great-expectations
-ruamel.yaml.clib==0.2.7
-    # via ruamel.yaml
+ruamel-yaml-clib==0.2.7
+    # via ruamel-yaml
 scipy==1.7.3
     # via
     #   -r requirements/dev.in
@@ -698,21 +681,11 @@ traitlets==5.1.1
 typing-extensions==4.1.1
     # via
     #   -c requirements/prod.txt
-    #   aiohttp
-    #   anyio
-    #   argon2-cffi
-    #   async-timeout
-    #   gitpython
     #   great-expectations
-    #   importlib-metadata
-    #   jsonschema
-    #   kiwisolver
     #   pydantic
     #   pytorch-lightning
-    #   rich
     #   sqlalchemy2-stubs
     #   torch
-    #   yarl
 tzdata==2022.5
     # via pytz-deprecation-shim
 tzlocal==4.2
@@ -757,7 +730,6 @@ zipp==3.8.0
     # via
     #   -c requirements/prod.txt
     #   importlib-metadata
-    #   importlib-resources
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

@@ -32,7 +32,6 @@ def main(args):
     frontend.launch(
         server_name="0.0.0.0",  # make server accessible, binding all interfaces  # noqa: S104
         server_port=args.port,  # set a port to bind to, failing if unavailable
-        share=True,  # should we create a (temporary) public link on https://gradio.app?
         favicon_path=FAVICON,  # what icon should we display in the address bar?
     )
 
@@ -152,6 +151,7 @@ class PredictorBackend:
 
         try:
             response = requests.post(self.url, data=payload, headers=headers, timeout=20)  # seconds, imposed by Heroku
+            print(response.json())
             pred = response.json()["pred"]
         except requests.exceptions.Timeout:
             pred = "Sorry, the model took too long to respond. Please try again."

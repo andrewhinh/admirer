@@ -49,19 +49,19 @@ To setup the production server for the website, we:
 1. Create an AWS Lambda function for the backend:
 
     ```bash
-    python3 utils/build_docker.py --ecr_repo_name admirer-backend --update_lambda_func
+    python utils/build_docker.py --ecr_repo_name admirer-backend --update_lambda_func
     ```
 
 2. Create a Docker image for the frontend and push to AWS ECR:
 
     ```bash
-    python3 utils/build_docker.py --dockerfile_path app_gradio/Dockerfile
+    python utils/build_docker.py --dockerfile_path app_gradio/Dockerfile
     ```
 
 3. Pull the frontend Docker image on an AWS EC2 instance:
 
     ```bash
-    python3 utils/build_docker.py --pull_image
+    python utils/build_docker.py --pull_image
     ```
 
 4. Run the Docker image:
@@ -109,33 +109,26 @@ To contribute, check out the [guide](./CONTRIBUTING.md).
     echo "export PYTHONPATH=.:$PYTHONPATH" >> ~/.bashrc
     ```
 
-3. Reinstall PyTorch if using a newer NVIDIA RTX GPU:
-
-    ```bash
-    pip3 uninstall torch torchvision torchaudio -y
-    # Download the PyTorch version that is compatible with your machine: https://pytorch.org/get-started/locally/
-    ```
-
-4. Install pre-commit:
+3. Install pre-commit:
 
     ```bash
     pre-commit install
     ```
 
-5. Sign up for an OpenAI account and get an API key [here](https://beta.openai.com/account/api-keys).
-6. (Optional) Sign up for an ngrok account and get an authtoken [here](https://dashboard.ngrok.com/auth).
-7. Populate a `.env` file with your keys/authtokens in the format of `.env.template`, and reactivate the environment.
-8. (Optional) Sign up for an AWS account [here](https://us-west-2.console.aws.amazon.com/ecr/create-repository?region=us-west-2) and set up your AWS credentials locally, referring to [this](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-config) as needed:
+4. Sign up for an OpenAI account and get an API key [here](https://beta.openai.com/account/api-keys).
+5. (Optional) Sign up for an ngrok account and get an authtoken [here](https://dashboard.ngrok.com/auth).
+6. Populate a `.env` file with your keys/authtokens in the format of `.env.template`, and reactivate the environment.
+7. (Optional) Sign up for an AWS account [here](https://us-west-2.console.aws.amazon.com/ecr/create-repository?region=us-west-2) and set up your AWS credentials locally, referring to [this](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-config) as needed:
 
     ```bash
     aws configure
     ```
 
-9. Sign up for a Weights and Biases account [here](https://wandb.ai/signup) and download the CLIP ONNX file locally:
+8. Sign up for a Weights and Biases account [here](https://wandb.ai/signup) and download the CLIP ONNX file locally:
 
     ```bash
     wandb login
-    python3 ./training/stage_model.py --fetch --from_project admirer
+    python ./training/stage_model.py --fetch --from_project admirer
     ```
 
 If the instructions aren't working for you, head to [this Google Colab](https://colab.research.google.com/drive/1Z34DLHJm1i1e1tnknICujfZC6IaToU3k?usp=sharing), make a copy of it, and run the cells there to get an environment set up.
@@ -171,7 +164,7 @@ From the main directory, there are various ways to test the pipeline:
 - To train the caption model (add `--strategy ddp_find_unused_parameters_false` for multi-GPU machines; takes ~7.5 hrs on an 8xA100 Lambda Labs instance):
 
     ```bash
-    python3 ./training/run_experiment.py \
+    python ./training/run_experiment.py \
     --data_class PICa --model_class ViT2GPT2 --gpus "-1" \
     --wandb --log_every_n_steps 25 --max_epochs 300 \
     --augment_data True --num_workers "$(nproc)" \
@@ -181,7 +174,7 @@ From the main directory, there are various ways to test the pipeline:
 - To test the caption model (best model can be downloaded from [here](https://wandb.ai/admirer/admirer-training/artifacts/model/model-2vgqajre/v4/files)):
 
     ```bash
-    python3 ./training/test_model.py \
+    python ./training/test_model.py \
     --data_class PICa --model_class ViT2GPT2 \
     --num_workers "$(nproc)" --load_checkpoint training/model.pth
     ```
@@ -189,13 +182,13 @@ From the main directory, there are various ways to test the pipeline:
 - To start the Gradio app locally:
 
     ```bash
-    python3 app_gradio/app.py --flagging
+    python app_gradio/app.py --flagging
     ```
 
 - To test the Gradio frontend by launching and pinging the frontend locally:
 
     ```bash
-    python3 -c "from app_gradio.tests.test_app import test_local_run; test_local_run()"
+    python -c "from app_gradio.tests.test_app import test_local_run; test_local_run()"
     ```
 
 - To test the caption model's ability to memorize a single batch:

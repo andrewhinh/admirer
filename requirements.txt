@@ -241,7 +241,7 @@ pyyaml==5.4.1
     #   wandb
 regex==2022.9.13
     # via transformers
-requests==2.27.1
+requests==2.31.0
     # via
     #   -r requirements/prod.in
     #   analytics-python

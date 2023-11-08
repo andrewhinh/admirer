@@ -49,13 +49,14 @@ To setup the production server for the website, we:
 1. Create an AWS Lambda function for the backend:
 
     ```bash
+    . deploy/aws_login.sh
     python deploy/aws_lambda.py
     ```
 
 2. Implement continual development by updating the AWS Lambda backend whenever a commit is pushed to the repo and the BERTScore computed F1 score of the pipeline has improved:
 
     ```bash
-    . ./deploy/cont_deploy.sh
+    . deploy/cont_deploy.sh
     ```
 
 ## Development

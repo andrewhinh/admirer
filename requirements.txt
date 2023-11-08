@@ -279,7 +279,7 @@ sniffio==1.2.0
     #   anyio
     #   httpcore
     #   httpx
-starlette==0.19.1
+starlette==0.27.0
     # via fastapi
 sympy==1.10.1
     # via onnxruntime

@@ -161,15 +161,15 @@ class PICa_OKVQA:
             system_message = {
                 "role": "system",
                 "content": str(
-                    "You are given an image of a user's webcam and "
-                    + "a question about the image. "
-                    + "Answer the question according to the given context. "
-                    + "If the context is not enough to answer the question, "
-                    + "make up a reply as follows:"
+                    "You are given {n_shot} examples of image content, a question about the image, and an answer. "
+                    + "Given a new set of content and question, "
+                    + "you are tasked with coming up with an answer in a similar way to the examples. "
+                    + "If the content is not enough to answer the question, "
+                    + "make up an answer structured as:"
                     + "\n"
-                    + "1) acknowledgment of not knowing the answer,"
+                    + "1) an acknowledgment of not knowing the correct answer to the question,"
                     + "\n"
-                    + "2) comedic reply using the context."
+                    + "2) a comedic reply using what you can from the content."
                     + "\n"
                     + "For example, if the question is 'What is the color of the user's shirt?', "
                     + "and the context is 'The user is wearing a shirt with a picture of a cat on it', "
@@ -201,12 +201,14 @@ class PICa_OKVQA:
                     answer = answer[0]
                 user_message = {
                     "role": "user",
-                    "content": str("Context: " + caption + "\n" + "Question: " + question + "\n" + "Answer: " + answer),
+                    "content": str(
+                        "Image content: " + caption + "\n" + "Question: " + question + "\n" + "Answer: " + answer
+                    ),
                 }
                 messages.append(user_message)
             current_user_message = {
                 "role": "user",
-                "content": str("Context: " + caption + "\n" + "Question: " + question + "\n" + "Answer: "),
+                "content": str("Image content: " + caption + "\n" + "Question: " + question + "\n" + "Answer: "),
             }
             messages.append(current_user_message)
             try:

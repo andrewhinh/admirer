@@ -152,7 +152,7 @@ mkl-service==2.4.0
     # via -r requirements/prod.in
 monotonic==1.6
     # via analytics-python
-mpmath==1.2.1
+mpmath==1.3.0
     # via sympy
 multidict==6.0.2
     # via

@@ -157,7 +157,7 @@ From the main directory, there are various ways to test the pipeline:
 - To start the Gradio app locally:
 
     ```bash
-    python app_gradio/app.py --flagging
+    python app_gradio/app.py
     ```
 
 - To test the Gradio frontend by launching and pinging the frontend locally:

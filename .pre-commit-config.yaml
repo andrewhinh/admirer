@@ -36,7 +36,7 @@ repos:
             flake8-docstrings,
             flake8-import-order,
             darglint,
-            mypy,
+            mypy==0.960,
             pycodestyle,
             pydocstyle,
           ]

@@ -4,7 +4,7 @@ bandit
 black
 darglint
 flake8<4
-flake8-annotations
+flake8-annotations<2
 flake8-bandit
 flake8-bugbear
 flake8-black

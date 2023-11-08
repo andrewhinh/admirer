@@ -3,35 +3,6 @@ data/downloaded
 data/processed
 data/interim
 
-#ADDED###################################
-# Training/context data
-/data/downloaded/
-
-# Label Environment
-/data_manage/label-env/
-
-# Model Checkpoint
-/training/model.pth
-
-# Production files
-/question_answer/artifacts/answer/coco_annotations/
-/question_answer/artifacts/answer/coco_clip_new/
-/question_answer/artifacts/answer/onnx/
-/question_answer/artifacts/answer/transformers/
-
-# GPT-3 API Key
-.env
-
-# ZenML local config
-.zen/
-
-# AWS EC2 SSH Key
-/admirer-key.pem
-
-# Hosting
-pagekite.py
-#ADDED###################################
-
 # Editors
 .vscode
 *.sw?
@@ -89,3 +60,27 @@ lab9/requirements.txt
 requirements/dev-lint.txt
 bootstrap.py
 **/fixme.py
+
+#ADDED###################################
+# Training/context data
+/data/downloaded/
+
+# Label Environment
+/data_manage/label-env/
+
+# Model Checkpoint
+/training/model.pth
+
+# Production files
+/question_answer/artifacts/answer/coco_annotations/
+/question_answer/artifacts/answer/coco_clip_new/
+/question_answer/artifacts/answer/onnx/
+/question_answer/artifacts/answer/transformers/
+
+# GPT-3 API Key
+.env
+
+# ZenML local config
+.zen/
+
+#ADDED###################################

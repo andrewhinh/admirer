@@ -13,6 +13,7 @@ analytics-python==1.4.0
 anyio==3.6.1
     # via
     #   httpcore
+    #   openai
     #   starlette
 asgiref==3.5.2
     # via uvicorn
@@ -59,10 +60,10 @@ cryptography==37.0.2
     # via paramiko
 cycler==0.11.0
     # via matplotlib
+distro==1.8.0
+    # via openai
 docker-pycreds==0.4.0
     # via wandb
-et-xmlfile==1.1.0
-    # via openpyxl
 fastapi==0.78.0
     # via gradio
 ffmpy==0.3.0
@@ -96,7 +97,9 @@ h5py==3.6.0
 httpcore==0.15.0
     # via httpx
 httpx==0.23.0
-    # via gradio
+    # via
+    #   gradio
+    #   openai
 huggingface-hub==0.10.0
     # via
     #   timm
@@ -162,16 +165,13 @@ numpy==1.21.6
     #   h5py
     #   matplotlib
     #   onnxruntime
-    #   openai
     #   pandas
     #   torchvision
     #   transformers
 onnxruntime==1.12.1
     # via -r requirements/prod.in
-openai==0.23.1
+openai==1.1.1
     # via -r requirements/prod.in
-openpyxl==3.0.10
-    # via openai
 orjson==3.7.2
     # via gradio
 packaging==20.9
@@ -181,11 +181,7 @@ packaging==20.9
     #   onnxruntime
     #   transformers
 pandas==1.3.5
-    # via
-    #   gradio
-    #   openai
-pandas-stubs==1.2.0.62
-    # via openai
+    # via gradio
 paramiko==2.11.0
     # via gradio
 pathtools==0.1.2
@@ -212,6 +208,7 @@ pydantic==1.9.1
     # via
     #   fastapi
     #   gradio
+    #   openai
 pydub==0.25.1
     # via gradio
 pynacl==1.5.0
@@ -250,7 +247,6 @@ requests==2.27.1
     #   analytics-python
     #   gradio
     #   huggingface-hub
-    #   openai
     #   torchvision
     #   transformers
     #   wandb
@@ -310,7 +306,7 @@ tqdm==4.64.0
     #   transformers
 transformers==4.22.2
     # via -r requirements/prod.in
-typing-extensions==4.1.1
+typing-extensions==4.7.1
     # via
     #   aiohttp
     #   anyio
@@ -322,7 +318,6 @@ typing-extensions==4.1.1
     #   kiwisolver
     #   markdown-it-py
     #   openai
-    #   pandas-stubs
     #   pydantic
     #   starlette
     #   torch

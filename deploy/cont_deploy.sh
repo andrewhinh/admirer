@@ -16,9 +16,9 @@ do
 
             echo "$NEW_F1" >| "$CURRENT_F1_PATH"
 
-            . ./utils/aws_login.sh
+            . ./deploy/aws_login.sh
 
-            python3 utils/build_docker.py --ecr_repo_name admirer-backend --update_lambda_func
+            python3 deploy/aws_lambda.py
         else
             echo "No improvement -> no updates made"
 

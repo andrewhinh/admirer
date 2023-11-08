@@ -1,11 +1,11 @@
 """Provide a webcam screenshot and a burning question and get back a lover-like accurate answer!"""
-import argparse
 import json
 import logging
 import os
 from pathlib import Path
 from typing import Callable
 
+from dotenv import load_dotenv
 import gradio as gr
 from PIL import ImageStat
 from PIL.Image import Image
@@ -19,6 +19,9 @@ os.environ["CUDA_VISIBLE_DEVICES"] = ""  # do not use GPU
 
 logging.basicConfig(level=logging.INFO)
 
+load_dotenv()  # load environment variables from a .env file if it exists
+BACKEND_URL = os.getenv("BACKEND_URL")  # URL of a backend to which to send image data
+
 APP_DIR = Path(__file__).resolve().parent  # what is the directory for this application?
 FAVICON = APP_DIR / "logo.jpeg"  # path to a small image for display in browser tab and social media
 README = APP_DIR / "README.md"  # path to an app readme file in HTML/markdown
@@ -26,12 +29,11 @@ README = APP_DIR / "README.md"  # path to an app readme file in HTML/markdown
 DEFAULT_PORT = 11700
 
 
-def main(args):
-    predictor = PredictorBackend(url=args.model_url)
-    frontend = make_frontend(predictor.run, flagging=args.flagging)
+def main():
+    predictor = PredictorBackend(use_url=True)
+    frontend = make_frontend(predictor.run, flagging=True)
     frontend.launch(
         server_name="0.0.0.0",  # make server accessible, binding all interfaces  # noqa: S104
-        server_port=args.port,  # set a port to bind to, failing if unavailable
         favicon_path=FAVICON,  # what icon should we display in the address bar?
     )
 
@@ -97,9 +99,9 @@ class PredictorBackend:
     Otherwise, runs a predictor locally.
     """
 
-    def __init__(self, url=None):
-        if url is not None:
-            self.url = url
+    def __init__(self, use_url):
+        if use_url:
+            self.url = BACKEND_URL
             self._predict = self._predict_from_endpoint
         else:
             model = Pipeline()
@@ -149,12 +151,9 @@ class PredictorBackend:
             {"image": "data:image/jpg;base64," + encoded_image, "question": "data:question/str;str," + question}
         )
 
-        try:
-            response = requests.post(self.url, data=payload, headers=headers, timeout=20)  # seconds, imposed by Heroku
-            print(response.json())
-            pred = response.json()["pred"]
-        except requests.exceptions.Timeout:
-            pred = "Sorry, the model took too long to respond. Please try again."
+        response = requests.post(self.url, data=payload, headers=headers)
+        print(response.json())
+        pred = response.json()["pred"]
 
         return pred
 
@@ -174,30 +173,5 @@ def _load_readme(with_logging=False):
     return readme
 
 
-def _make_parser():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--model_url",
-        default=None,
-        type=str,
-        help="Identifies a URL to which to send image data. Data is base64-encoded, converted to a utf-8 string, and then set via a POST request as JSON with the key 'image'. Default is None, which instead sends the data to a model running locally.",
-    )
-    parser.add_argument(
-        "--port",
-        default=DEFAULT_PORT,
-        type=int,
-        help=f"Port on which to expose this server. Default is {DEFAULT_PORT}.",
-    )
-    parser.add_argument(
-        "--flagging",
-        action="store_true",
-        help="Pass this flag to allow users to 'flag' model behavior and provide feedback.",
-    )
-
-    return parser
-
-
 if __name__ == "__main__":
-    parser = _make_parser()
-    args = parser.parse_args()
-    main(args)
+    main()

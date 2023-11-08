@@ -25,4 +25,3 @@ seaborn>=0.11,<0.12
 # versioned to improve stability
 pytorch-lightning==1.6.3
 torchmetrics<0.8
-wandb==0.12.17

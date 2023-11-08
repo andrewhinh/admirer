@@ -49,37 +49,13 @@ To setup the production server for the website, we:
 1. Create an AWS Lambda function for the backend:
 
     ```bash
-    python utils/build_docker.py --ecr_repo_name admirer-backend --update_lambda_func
+    python deploy/aws_lambda.py
     ```
 
-2. Create a Docker image for the frontend and push to AWS ECR:
+2. Implement continual development by updating the AWS Lambda backend whenever a commit is pushed to the repo and the BERTScore computed F1 score of the pipeline has improved:
 
     ```bash
-    python utils/build_docker.py --dockerfile_path app_gradio/Dockerfile
-    ```
-
-3. Pull the frontend Docker image on an AWS EC2 instance:
-
-    ```bash
-    python utils/build_docker.py --pull_image
-    ```
-
-4. Run the Docker image:
-
-    ```bash
-    . ./app_gradio/run_app.sh
-    ```
-
-5. Serve the app over a permanent ngrok tunnel:
-
-    ```bash
-    . ./app_gradio/serve_ngrok.sh
-    ```
-
-6. Implement continual development by updating the AWS Lambda backend when signaled by a pushed commit to the repo and checking if the BERTScore computed F1 score of the pipeline has improved:
-
-    ```bash
-    . ./backend_setup/cont_deploy.sh
+    . ./deploy/cont_deploy.sh
     ```
 
 ## Development
@@ -116,19 +92,18 @@ To contribute, check out the [guide](./CONTRIBUTING.md).
     ```
 
 4. Sign up for an OpenAI account and get an API key [here](https://beta.openai.com/account/api-keys).
-5. (Optional) Sign up for an ngrok account and get an authtoken [here](https://dashboard.ngrok.com/auth).
-6. Populate a `.env` file with your keys/authtokens in the format of `.env.template`, and reactivate the environment.
-7. (Optional) Sign up for an AWS account [here](https://us-west-2.console.aws.amazon.com/ecr/create-repository?region=us-west-2) and set up your AWS credentials locally, referring to [this](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-config) as needed:
-
-    ```bash
-    aws configure
-    ```
-
-8. Sign up for a Weights and Biases account [here](https://wandb.ai/signup) and download the CLIP ONNX file locally:
+5. Populate a `.env` file with your key and the backend URL in the format of `.env.template`, and reactivate the environment.
+6. Sign up for a Weights and Biases account [here](https://wandb.ai/signup) and download the CLIP ONNX file locally:
 
     ```bash
     wandb login
     python ./training/stage_model.py --fetch --from_project admirer
+    ```
+
+7. (Optional) Sign up for an AWS account [here](https://us-west-2.console.aws.amazon.com/ecr/create-repository?region=us-west-2) and set up your AWS credentials locally, referring to [this](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-config) as needed:
+
+    ```bash
+    aws configure
     ```
 
 If the instructions aren't working for you, head to [this Google Colab](https://colab.research.google.com/drive/1Z34DLHJm1i1e1tnknICujfZC6IaToU3k?usp=sharing), make a copy of it, and run the cells there to get an environment set up.
@@ -141,7 +116,7 @@ The repo is separated into main folders that each describe a part of the ML-proj
 .
 ├── api_serverless  # the backend handler code using AWS Lambda.
 ├── app_gradio      # the frontend code using Gradio.
-├── backend_setup   # the AWS Lambda backend setup and continuous deployment code.
+├── deploy   # the AWS Lambda backend setup and continuous deployment code.
 ├── data_manage     # the data management code using AWS S3 for training data and ZenML log storage, boto3 for data exploration, and ZenML + Great Expectations for data validation.
 ├── load_test       # the load testing code using Locust.
 ├── monitoring      # the model monitoring code using Gradio's flagging feature.
@@ -197,24 +172,30 @@ From the main directory, there are various ways to test the pipeline:
     . ./training/tests/test_memorize_caption.sh
     ```
 
-- To test various aspects of the model pipeline:
+- To run integration tests for the model pipeline:
 
     ```bash
-    . ./tasks/REPLACE #replacing REPLACE with the corresponding shell script in the tasks/ folder
+    . ./tasks/integration_test.sh
+    ```
+
+- To run unit tests for the model pipeline:
+
+    ```bash
+    . ./tasks/unit_test.sh
+    ```
+
+- To test the whole model pipeline:
+
+    ```bash
+    . ./tasks/test.sh
     ```
 
 ### Code Style
 
-- To run pre-commit hooks:
+- To lint your code:
 
     ```bash
     pre-commit run --all-files
-    ```
-
-- To lint the code (after staging your changes):
-
-    ```bash
-    make lint
     ```
 
 ## Credit

@@ -75,7 +75,6 @@ certifi==2021.10.8
     # via
     #   -c requirements/prod.txt
     #   requests
-    #   sentry-sdk
 cffi==1.15.0
     # via
     #   -c requirements/prod.txt
@@ -95,7 +94,6 @@ click==8.1.2
     #   click-params
     #   great-expectations
     #   nltk
-    #   wandb
     #   zenml
 click-params==0.3.0
     # via zenml
@@ -126,13 +124,11 @@ defusedxml==0.7.1
 distlib==0.3.4
     # via virtualenv
 distro==1.8.0
-    # via zenml
-docker==4.4.4
-    # via ml-pipelines-sdk
-docker-pycreds==0.4.0
     # via
     #   -c requirements/prod.txt
-    #   wandb
+    #   zenml
+docker==4.4.4
+    # via ml-pipelines-sdk
 entrypoints==0.4
     # via
     #   altair
@@ -166,7 +162,6 @@ gitdb==4.0.9
 gitpython==3.1.29
     # via
     #   -c requirements/prod.txt
-    #   wandb
     #   zenml
 google-api-core==2.10.2
     # via google-api-python-client
@@ -413,10 +408,6 @@ parso==0.8.3
     # via jedi
 passlib[bcrypt]==1.7.4
     # via zenml
-pathtools==0.1.2
-    # via
-    #   -c requirements/prod.txt
-    #   wandb
 pexpect==4.8.0
     # via ipython
 pickleshare==0.7.5
@@ -438,10 +429,6 @@ prometheus-client==0.15.0
     #   jupyter-server
     #   nbclassic
     #   notebook
-promise==2.3
-    # via
-    #   -c requirements/prod.txt
-    #   wandb
 prompt-toolkit==3.0.29
     # via ipython
 protobuf==3.20.3
@@ -452,12 +439,10 @@ protobuf==3.20.3
     #   ml-metadata
     #   ml-pipelines-sdk
     #   tensorboard
-    #   wandb
 psutil==5.9.3
     # via
     #   -c requirements/prod.txt
     #   portpicker
-    #   wandb
 ptyprocess==0.7.0
     # via
     #   pexpect
@@ -517,7 +502,6 @@ python-dateutil==2.8.2
     #   jupyter-client
     #   matplotlib
     #   pandas
-    #   wandb
     #   zenml
 python-terraform==0.10.1
     # via zenml
@@ -535,7 +519,6 @@ pyyaml==5.4.1
     #   -c requirements/prod.txt
     #   pre-commit
     #   pytorch-lightning
-    #   wandb
     #   zenml
 pyzmq==24.0.1
     # via
@@ -558,7 +541,6 @@ requests==2.27.1
     #   language-tool-python
     #   requests-oauthlib
     #   tensorboard
-    #   wandb
 requests-oauthlib==1.3.1
     # via google-auth-oauthlib
 rich[jupyter]==12.6.0
@@ -583,18 +565,6 @@ send2trash==1.8.0
     #   jupyter-server
     #   nbclassic
     #   notebook
-sentry-sdk==1.10.1
-    # via
-    #   -c requirements/prod.txt
-    #   wandb
-setproctitle==1.3.2
-    # via
-    #   -c requirements/prod.txt
-    #   wandb
-shortuuid==1.0.9
-    # via
-    #   -c requirements/prod.txt
-    #   wandb
 six==1.16.0
     # via
     #   -c requirements/prod.txt
@@ -602,7 +572,6 @@ six==1.16.0
     #   analytics-python
     #   bleach
     #   docker
-    #   docker-pycreds
     #   google-api-python-client
     #   google-apitools
     #   google-auth
@@ -611,11 +580,9 @@ six==1.16.0
     #   itermplot
     #   ml-metadata
     #   oauth2client
-    #   promise
     #   python-dateutil
     #   validators
     #   virtualenv
-    #   wandb
 smmap==5.0.0
     # via
     #   -c requirements/prod.txt
@@ -695,7 +662,7 @@ traitlets==5.1.1
     #   nbconvert
     #   nbformat
     #   notebook
-typing-extensions==4.1.1
+typing-extensions==4.7.1
     # via
     #   -c requirements/prod.txt
     #   aiohttp
@@ -724,15 +691,10 @@ urllib3==1.26.12
     #   -c requirements/prod.txt
     #   great-expectations
     #   requests
-    #   sentry-sdk
 validators==0.18.2
     # via click-params
 virtualenv==20.14.1
     # via pre-commit
-wandb==0.12.17
-    # via
-    #   -c requirements/prod.txt
-    #   -r requirements/dev.in
 wcwidth==0.2.5
     # via prompt-toolkit
 webencodings==0.5.1

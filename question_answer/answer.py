@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Tuple, Union
 from dotenv import load_dotenv
 import numpy as np
 from onnxruntime import InferenceSession
-import openai
+from openai import OpenAI
 from PIL import Image
 import torch
 from transformers import (
@@ -25,22 +25,23 @@ from transformers import (
 
 import question_answer.metadata.pica as metadata
 
+# Loading env variables
+load_dotenv()
+
 # Variables
+# OpenAI params
+CLIENT = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+MODEL = "gpt-3.5-turbo-1106"
+
 # Artifact path
 artifact_path = Path(__file__).resolve().parent / "artifacts" / "answer"
 
 # PICa formatting/config
 img_id = 100  # Random idx for inference
 question_id = 1005  # Random idx for inference
-# Other engines like text-curie-001 don't work from testing, can't intuit the task at hand
-engine = "text-davinci-003"
 # Significant driver of performance with little extra cost
-# PICa paper's max = 16, setting = 16 b/c setting = 32 causes # of tokens > max # of tokens/request allowed
+# PICa paper's max = 16, but can set higher if model's speed + context size can handle it
 n_shot = 16
-# Signficant driver of cost with very little added benefit
-# PICa paper's max = 5, but setting = 3 according to paper's results that show little drop in performance
-# Note: it's possible to set > 5, since there's no limit to its #
-n_ensemble = 3
 coco_path = artifact_path / "coco_annotations"
 similarity_path = artifact_path / "coco_clip_new"
 
@@ -59,9 +60,6 @@ caption_model = transformers_path / "nlpconnect" / "vit-gpt2-image-captioning"
 # CLIP Encoders config
 clip_processor = transformers_path / "openai" / "clip-vit-base-patch16"
 clip_onnx = onnx_path / "clip.onnx"
-
-# Loading env variables
-load_dotenv()
 
 # Dataset variables
 NUM_ORIGINAL_EXAMPLES = metadata.NUM_ORIGINAL_EXAMPLES
@@ -153,65 +151,74 @@ class PICa_OKVQA:
                 self.inputtext_dict[img_key],
             )
 
-            pred_answer_list, pred_prob_list = [], []
             context_key_list = self.get_context_keys(
                 key,
-                n_shot * n_ensemble,
+                n_shot,
             )
 
-            for repeat in range(n_ensemble):
-                # prompt format following GPT-3 QA API
-                prompt = "Answer the question according to the given context.\n===\n"
-                for ni in range(n_shot):
-                    if context_key_list is None:
-                        context_key = self.train_keys[random.randint(0, len(self.train_keys) - 1)]
-                    else:
-                        context_key = context_key_list[ni + n_shot * repeat]
-                    img_context_key = int(context_key.split("<->")[0])
-                    while True:  # make sure get context with valid question and answer
-                        if (
-                            len(self.traincontext_question_dict[context_key]) != 0
-                            and len(self.traincontext_answer_dict[context_key][0]) != 0
-                        ):
-                            break
-                        context_key = self.train_keys[random.randint(0, len(self.train_keys) - 1)]
-                    prompt += "Context: %s\n===\n" % self.traincontext_caption_dict[img_context_key]
-                    prompt += "Question: %s\nAnswer: %s\n\n===\n" % (
-                        self.traincontext_question_dict[context_key],
-                        self.traincontext_answer_dict[context_key],
-                    )
-                prompt += "Context: %s\n===\n" % caption
-                prompt += "Question: %s\nAnswer:" % question
-                response = None
-                try:
-                    response = openai.Completion.create(
-                        engine=engine,
-                        prompt=prompt,
-                        max_tokens=80,
-                        logprobs=1,
-                        temperature=0.7,
-                        stream=False,
-                        stop=["\n", "<|endoftext|>"],
-                    )["choices"][0]
-                except Exception as e:
-                    print(e)
-                    exit(0)
-
-                plist = []
-                for ii in range(len(response["logprobs"]["tokens"])):
-                    if response["logprobs"]["tokens"][ii] == "\n":
+            # prompt format following OpenAI QA API
+            messages = []
+            system_message = {
+                "role": "system",
+                "content": str(
+                    "You are given an image of a user's webcam and "
+                    + "a question about the image. "
+                    + "Answer the question according to the given context. "
+                    + "If the context is not enough to answer the question, "
+                    + "make up a reply as follows:"
+                    + "\n"
+                    + "1) acknowledgment of not knowing the answer,"
+                    + "\n"
+                    + "2) comedic reply using the context."
+                    + "\n"
+                    + "For example, if the question is 'What is the color of the user's shirt?', "
+                    + "and the context is 'The user is wearing a shirt with a picture of a cat on it', "
+                    + "a good answer could be 'I don't know, but I think the cat is cute!'"
+                ),
+            }
+            messages.append(system_message)
+            for ni in range(n_shot):
+                if context_key_list is None:
+                    context_key = self.train_keys[random.randint(0, len(self.train_keys) - 1)]
+                else:
+                    context_key = context_key_list[ni]
+                img_context_key = int(context_key.split("<->")[0])
+                while True:  # make sure get context with valid question and answer
+                    if (
+                        len(self.traincontext_question_dict[context_key]) != 0
+                        and len(self.traincontext_answer_dict[context_key][0]) != 0
+                    ):
                         break
-                    plist.append(response["logprobs"]["token_logprobs"][ii])
-                pred_answer_list.append(self.process_answer(response["text"]))
-                pred_prob_list.append(sum(plist))
+                    context_key = self.train_keys[random.randint(0, len(self.train_keys) - 1)]
+                caption = self.traincontext_caption_dict[img_context_key]
+                question = self.traincontext_question_dict[context_key]
+                answer = self.traincontext_answer_dict[context_key]
+                if type(caption) == list:
+                    caption = caption[0]  # sometimes annotators messed up
+                if type(question) == list:
+                    question = question[0]
+                if type(answer) == list:
+                    answer = answer[0]
+                user_message = {
+                    "role": "user",
+                    "content": str("Context: " + caption + "\n" + "Question: " + question + "\n" + "Answer: " + answer),
+                }
+                messages.append(user_message)
+            current_user_message = {
+                "role": "user",
+                "content": str("Context: " + caption + "\n" + "Question: " + question + "\n" + "Answer: "),
+            }
+            messages.append(current_user_message)
+            try:
+                response = CLIENT.chat.completions.create(
+                    model=MODEL,
+                    messages=messages,
+                )
+            except Exception as e:
+                print(e)
+                exit(0)
 
-            # Choose the prediction with highest log probs
-            maxval = -999.0
-            for ii in range(len(pred_prob_list)):
-                if pred_prob_list[ii] > maxval:
-                    maxval, pred_answer = pred_prob_list[ii], pred_answer_list[ii]
-            if not pred_answer or pred_answer == " ":
-                pred_answer = "?"
+            pred_answer = response.choices[0].message.content
 
             if self.evaluate:
                 answer = self.testcontext_answer_dict[key]
@@ -223,54 +230,6 @@ class PICa_OKVQA:
         from question_answer.lit_models.metrics import BertF1Score
 
         return BertF1Score()(pred_answers, gt_answers)
-
-    """
-    def rationale(self, answer):
-        _, _, question_dict = self.load_anno(questions=self.questions)
-
-        key = list(question_dict.keys())[0]
-        img_key = int(key.split("<->")[0])
-        question, _ = (
-            question_dict[key],
-            self.inputtext_dict[img_key],
-        )
-
-        pred_answer_list, pred_prob_list = [], []
-
-        for _ in range(n_ensemble):
-            # prompt format following GPT-3 QA API
-            prompt = ""
-            prompt += "Q: %s\n" % question
-            prompt += "A: %s\nThis is because" % answer
-
-            response = None
-            try:
-                response = openai.Completion.create(
-                    engine=engine,
-                    prompt=prompt,
-                    max_tokens=10,
-                    logprobs=1,
-                    temperature=0.0,
-                    stream=False,
-                    stop=["\n", "<|endoftext|>"],
-                )
-            except Exception as e:
-                print(e)
-                exit(0)
-
-            plist = []
-            for ii in range(len(response["choices"][0]["logprobs"]["tokens"])):
-                if response["choices"][0]["logprobs"]["tokens"][ii] == "\n":
-                    break
-                plist.append(response["choices"][0]["logprobs"]["token_logprobs"][ii])
-            pred_answer_list.append(self.process_answer(response["choices"][0]["text"]))
-            pred_prob_list.append(sum(plist))
-        maxval = -999.0
-        for ii in range(len(pred_prob_list)):
-            if pred_prob_list[ii] > maxval:
-                maxval, pred_answer = pred_prob_list[ii], pred_answer_list[ii]
-        return pred_answer
-    """
 
     def get_context_keys(self, key: str, n: int) -> List[str]:
         """Get context keys based on similarity scores"""
@@ -455,14 +414,6 @@ class PICa_OKVQA:
 
         return context_caption_dict, context_tag_dict, context_answer_dict, context_question_dict
 
-    def process_answer(self, answer):
-        """Processes answer by removing unwanted characters and words"""
-        answer = answer.replace(".", "").replace(",", "").lower()
-        to_be_removed = {"a", "an", "the", "to", ""}
-        answer_list = answer.split(" ")
-        answer_list = [item for item in answer_list if item not in to_be_removed]
-        return " ".join(answer_list)
-
 
 class Pipeline:
     """
@@ -486,9 +437,6 @@ class Pipeline:
         # CLIP Setup
         self.clip_session = InferenceSession(str(clip_onnx))
         self.clip_processor = CLIPProcessor.from_pretrained(clip_processor)
-
-        # PICa Setup
-        openai.api_key = os.getenv("OPENAI_API_KEY")
 
     def predict_caption(self, image):
         pixel_values = self.caption_feature_extractor(images=[image], return_tensors="pt").pixel_values

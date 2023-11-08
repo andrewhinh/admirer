@@ -1,4 +1,4 @@
-"""Utility functions for text_recognizer module."""
+"""Utility functions for question_answer module."""
 import base64
 import contextlib
 import hashlib

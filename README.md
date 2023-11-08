@@ -154,7 +154,7 @@ From the main directory, there are various ways to test the pipeline:
     --num_workers "$(nproc)" --load_checkpoint training/model.pth
     ```
 
-- To start the Gradio app locally:
+- To start the app locally (uncomment code in PredictorBackend.__init__ and set use_url=False to use the local model instead of the API):
 
     ```bash
     python app_gradio/app.py

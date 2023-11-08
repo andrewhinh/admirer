@@ -10,9 +10,7 @@ import gradio as gr
 from PIL import ImageStat
 from PIL.Image import Image
 import requests
-
-from question_answer import util
-from question_answer.answer import Pipeline
+from util import encode_b64_image
 
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""  # do not use GPU
@@ -103,9 +101,12 @@ class PredictorBackend:
         if use_url:
             self.url = BACKEND_URL
             self._predict = self._predict_from_endpoint
-        else:
-            model = Pipeline()
-            self._predict = model.predict
+        # Uncomment the following lines to run the predictor locally
+        # else:
+        #     from question_answer.answer import Pipeline
+
+        #     model = Pipeline()
+        #     self._predict = model.predict
 
     def run(self, image, question):
         pred, metrics = self._predict_with_metrics(image, question)
@@ -144,7 +145,7 @@ class PredictorBackend:
         pred
             A string containing the predictor's guess of the text in the image.
         """
-        encoded_image = util.encode_b64_image(image)
+        encoded_image = encode_b64_image(image)
 
         headers = {"Content-type": "application/json"}
         payload = json.dumps(

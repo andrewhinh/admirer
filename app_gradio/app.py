@@ -71,11 +71,10 @@ def make_frontend(fn: Callable[[Image, str], str], flagging: bool = False):
         outputs=gr.components.Textbox(),  # what output widgets does it need? the default text widget
         # what input widgets does it need? we configure an image widget
         inputs=[
-            gr.components.Image(type="pil", label="Webcam Image", source="webcam"),
+            gr.components.Image(type="pil", label="Webcam Image", sources=["webcam"]),
             gr.components.Textbox(label="Question"),
         ],
         title="Admirer",  # what should we display at the top of the page?
-        thumbnail=FAVICON,  # what should we display when the link is shared, e.g. on social media?
         description=__doc__,  # what should we display just above the interface?
         article=readme,  # what long-form content should we display below the interface?
         examples=examples,  # which potential inputs should we provide?
@@ -97,16 +96,16 @@ class PredictorBackend:
     Otherwise, runs a predictor locally.
     """
 
-    def __init__(self, use_url):
+    def __init__(self, use_url=False):
         if use_url:
             self.url = BACKEND_URL
             self._predict = self._predict_from_endpoint
         # Uncomment the following lines to run the predictor locally
-        # else:
-        #     from question_answer.answer import Pipeline
+        else:
+            from question_answer.answer import Pipeline
 
-        #     model = Pipeline()
-        #     self._predict = model.predict
+            model = Pipeline()
+            self._predict = model.predict
 
     def run(self, image, question):
         pred, metrics = self._predict_with_metrics(image, question)
